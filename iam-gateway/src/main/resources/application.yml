@@ -1,0 +1,26 @@
+server:
+  # 網關中心對外暴露的統一入口連接埠
+  port: 9000
+
+# ===================================================================
+# 全局安全認證中心 - JWT 網關無狀態解密安全矩陣
+# ===================================================================
+app:
+  jwt:
+    # [驗證一致性防線]：此金鑰必須與原生的 Auth Service 完全對齊！
+    # 網關將在最外圈利用此對稱密鑰進行微秒級的密碼學去中心化自解密，拒絕非法偽造 Token 直擊後端
+    secret: "FRaNlJmM1RzRlNhYl123FRaNlJmM1RzRlNhYl123898"
+
+# ===================================================================
+# 日誌監控與分布式鏈路追蹤 (MDC + TraceId) 配置
+# ===================================================================
+logging:
+  level:
+    # 開啟網關核心路由追蹤日誌，便於排查請求轉發與 Predicate 匹配軌跡
+    org.springframework.cloud.gateway: TRACE
+    # 開啟 Spring MVC 核心分發器日誌，監控 DispatcherServlet 與資源處理器行為
+    org.springframework.web.servlet: DEBUG
+  pattern:
+    # [企業級鏈路日誌 Pattern] 核心補強：透過 [%X{traceId}] 動態抽取 SLF4J MDC 核心追蹤碼
+    # 確保同一次前端請求不論穿透到網關、AuthService 還是 DeptService，皆能透過唯一的 TraceId 橫向串聯
+    console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p) %clr(---){faint} %clr([%15.15t]){faint} %clr([TraceId: %X{traceId}]){magenta} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
