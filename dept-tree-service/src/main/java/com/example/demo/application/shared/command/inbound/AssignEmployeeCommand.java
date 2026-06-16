@@ -1,4 +1,4 @@
-package com.example.demo.application.shared.command;
+package com.example.demo.application.shared.command.inbound;
 
 /**
  * 將員工分派至部門 Command

@@ -1,4 +1,4 @@
-package com.example.demo.application.shared.command;
+package com.example.demo.application.shared.command.inbound;
 
 /**
  * 調整部門排序 Command

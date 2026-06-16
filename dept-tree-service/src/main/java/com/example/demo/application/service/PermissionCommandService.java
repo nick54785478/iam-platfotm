@@ -4,8 +4,8 @@ import com.example.demo.application.domain.permission.aggregate.PermissionDefini
 import com.example.demo.application.domain.permission.aggregate.vo.PermissionCode;
 import com.example.demo.application.domain.permission.repository.PermissionDefinitionRepository;
 import com.example.demo.application.domain.shared.vo.TenantId;
-import com.example.demo.application.shared.command.DefinePermissionCommand;
-import com.example.demo.application.shared.command.UpdatePermissionCommand;
+import com.example.demo.application.shared.command.inbound.DefinePermissionCommand;
+import com.example.demo.application.shared.command.inbound.UpdatePermissionCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
