@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.application.domain.dept.aggregate.Department;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentId;
-import com.example.demo.application.domain.dept.aggregate.vo.TenantId;
+import com.example.demo.application.domain.shared.vo.TenantId;
 
 /**
  * 組織部門 JPA 持久化介面 (Infrastructure Layer - Database Access)

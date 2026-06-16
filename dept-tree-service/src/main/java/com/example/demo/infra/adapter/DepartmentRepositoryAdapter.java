@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.application.domain.dept.aggregate.Department;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentId;
-import com.example.demo.application.domain.dept.aggregate.vo.TenantId;
+import com.example.demo.application.domain.shared.vo.TenantId;
 import com.example.demo.application.domain.dept.repository.DepartmentRepository;
 import com.example.demo.infra.persistence.DepartmentPersistence;
 

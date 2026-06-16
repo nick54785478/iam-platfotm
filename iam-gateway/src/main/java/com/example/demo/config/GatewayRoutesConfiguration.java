@@ -1,14 +1,19 @@
 package com.example.demo.config;
 
-import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
-import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
-import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
-import static org.springframework.web.servlet.function.RequestPredicates.path;
-
+import com.example.demo.application.port.GatewayRateLimiterPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.function.RouterFunction;
 import org.springframework.web.servlet.function.ServerResponse;
+
+import java.net.URI;
+
+import static com.example.demo.infra.ratelimit.RateLimitFilterFunctions.ipRateLimiter;
+import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
+import static org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions.circuitBreaker;
+import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
+import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
+import static org.springframework.web.servlet.function.RequestPredicates.path;
 
 /**
  * <h2>[網關層] 全局路由矩陣宣告配置類別 (Type-Safe 絕對防禦版)</h2>
@@ -18,55 +23,75 @@ import org.springframework.web.servlet.function.ServerResponse;
  * </p>
  * <p>
  * <b>【架構相容適配】</b>：<br>
- * 因應新版架構斷崖式更新（Breaking Change），{@code http()} 處理器內部不再接受目標位址參數， 統一改由前置過濾器
- * {@code .before(uri(...))} 執行目的地的解耦注入與動態轉發。
+ * 因應新版架構斷崖式更新（Breaking Change），{@code http()} 處理器內部不再接受目標位址參數，
+ * 統一改由前置過濾器 {@code .before(uri(...))} 執行目的地的解耦注入與動態轉發。
+ * </p>
+ * <p>
+ * <b>【高可用性防禦】</b>：<br>
+ * 內建 Resilience4j 斷路器 (Circuit Breaker)，針對後端微服務負載過高或崩潰時，
+ * 實施毫秒級的快速失敗 (Fail-Fast) 與就地降級 (Fallback) 策略，阻斷雪崩效應。
  * </p>
  */
 @Configuration
 public class GatewayRoutesConfiguration {
 
-	/**
-	 * 宣告核心多租戶微服務拓樸路由矩陣。
-	 * <p>
-	 * 整合了認證中心的公共寬限通道、認證管理端商務通道、以及 8081 獨立運作的部門領域聚合根通道。
-	 * </p>
-	 *
-	 * @return 封裝完整轉發邏輯與路徑斷言（Predicates）的 {@link RouterFunction} 路由樹
-	 */
+	private final GatewayRateLimiterPort rateLimiter;
+
+	public GatewayRoutesConfiguration(GatewayRateLimiterPort rateLimiter) {
+		this.rateLimiter = rateLimiter;
+	}
+
 	@Bean
 	public RouterFunction<ServerResponse> saasGatewayRoutes() {
-		return route("auth-public-route")
-				/**
-				 * 1. 認證中心公共通道 (Auth Service - Public Pass)
-				 * 
-				 * <pre>
-				 * 涵蓋：/api/auth/login, /api/auth/register 
-				 * 路由策略：直接放行轉發，流量至後端 AP 進行無狀態簽發 Token。
-				 * </pre>
-				 */
-				.route(path("/api/auth/**"), http()).before(uri("http://localhost:8080")).build()
 
-				/**
-				 * 2.認證中心管理/內部商務通道 (Auth Service - Admin Management)
-				 * 
-				 * <pre>
+		// 1. 先定義所有的路由規則
+		RouterFunction<ServerResponse> routes = route("auth-public-route")
+				.route(path("/api/auth/**"), http())
+				// [精準狙擊]：針對註冊/登入特別嚴格 (10秒 3次)
+				.filter(ipRateLimiter(rateLimiter, "auth-public", 3, 10))
+				.filter(circuitBreaker("authCircuitBreaker", URI.create("forward:/fallback/auth")))
+				.before(uri("http://localhost:8080"))
+				.build()
+
+				/*
+				 * ===================================================================
+				 * 2. 認證中心管理/內部商務通道 (Auth Service - Admin Management)
+				 * ===================================================================
 				 * 涵蓋：使用者、角色、群組之增刪改查管理
 				 * 安全策略：強制經過 JWT 過濾器校驗，並壓入多租戶上下文與權限。
-				 * </pre>
+				 * 崩潰防護：綁定 authCircuitBreaker 熔斷器。
 				 */
 				.and(route("auth-admin-route")
-						.route(path("/api/users/**").or(path("/api/roles/**")).or(path("/api/groups/**")), http())
-						.before(uri("http://localhost:8080")).build())
+						.route(path("/api/users/**")
+								.or(path("/api/roles/**"))
+								.or(path("/api/groups/**")), http())
+						.filter(ipRateLimiter(rateLimiter, "dept-api", 10, 10))
+						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
+						.filter(circuitBreaker("authCircuitBreaker", URI.create("forward:/fallback/auth")))
+						.before(uri("http://localhost:8080"))
+						.build())
 
-				/**
+				/*
+				 * ===================================================================
 				 * 3. 部門組織架構微服務通道 (Department Service - Domain Root)
-				 * 
-				 * <pre>
-				 * 涵蓋：/api/departments/** 樹狀結構建立、撤銷、改組與時光機操作 
+				 * ===================================================================
+				 * 涵蓋：/api/departments/** 樹狀結構建立、撤銷、改組與時光機操作
 				 * 轉發目標：精準投射至獨立部署於 8081 Port 的部門數據大腦。
-				 * </pre>
+				 * 崩潰防護：綁定 deptCircuitBreaker 熔斷器。
 				 */
-				.and(route("department-service-route").route(path("/api/departments/**"), http())
-						.before(uri("http://localhost:8081")).build());
+				.and(route("department-service-route")
+						.route(path("/api/departments/**"), http())
+						.filter(ipRateLimiter(rateLimiter, "dept-api", 2, 10))
+						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
+						.filter(circuitBreaker("deptCircuitBreaker", URI.create("forward:/fallback/department")))
+						.before(uri("http://localhost:8081"))
+						.build());
+		// ===================================================================
+		// 全局兜底防護網 (Global Filter)
+		// ===================================================================
+		// 將上面組合好的 routes，在最外層再包上一層限流器。
+		// 這代表「所有進來網關的流量」，都會先經過這個每秒 50 次的寬鬆盤查，
+		// 通過後，才會進入內部各自的精準限流與斷路器。
+		return routes.filter(ipRateLimiter(rateLimiter, "global-baseline", 50, 1));
 	}
 }

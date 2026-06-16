@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Base Domain Event (領域層 - 領域事件絕對骨幹) *
+ * Base Domain Event (領域層 - 領域事件絕對骨幹)
  * <p>
  * 實務優化版：合併了原本的純介面，由抽象類別一肩扛起業務合約與欄位共用。 0% 框架污染，完全不 import 任何 Jackson 註解。
  * </p>

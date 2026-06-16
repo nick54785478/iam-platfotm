@@ -1,4 +1,4 @@
-package com.example.demo.filter;
+package com.example.demo.iface.filter;
 
 import java.io.IOException;
 import java.util.Collections;

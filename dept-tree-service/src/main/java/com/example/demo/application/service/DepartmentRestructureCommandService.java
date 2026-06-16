@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.application.domain.dept.aggregate.Department;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentId;
-import com.example.demo.application.domain.dept.aggregate.vo.TenantId;
+import com.example.demo.application.domain.shared.vo.TenantId;
 import com.example.demo.application.domain.dept.event.EmployeeAssignedToDepartmentEvent;
 import com.example.demo.application.domain.dept.event.EmployeeUnassignedFromDepartmentEvent;
 import com.example.demo.application.domain.dept.repository.DepartmentRepository;

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import com.example.demo.application.domain.dept.aggregate.Department;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentId;
-import com.example.demo.application.domain.dept.aggregate.vo.TenantId;
+import com.example.demo.application.domain.shared.vo.TenantId;
 
 /**
  * Department Repository Port (領域層/寫入端 - 部門領域倉儲接口 Port)

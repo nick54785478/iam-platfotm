@@ -1,4 +1,4 @@
-package com.example.demo.application.domain.dept.aggregate.vo;
+package com.example.demo.application.domain.shared.vo;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -24,3 +24,23 @@ logging:
     # [企業級鏈路日誌 Pattern] 核心補強：透過 [%X{traceId}] 動態抽取 SLF4J MDC 核心追蹤碼
     # 確保同一次前端請求不論穿透到網關、AuthService 還是 DeptService，皆能透過唯一的 TraceId 橫向串聯
     console: "%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}){faint} %clr(%5p) %clr(---){faint} %clr([%15.15t]){faint} %clr([TraceId: %X{traceId}]){magenta} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      # 部門服務專屬熔斷防線
+      deptCircuitBreaker:
+        slidingWindowType: COUNT_BASED       # 基於請求次數計算錯誤率
+        slidingWindowSize: 10                # 滑動窗口大小為 10 次請求
+        minimumNumberOfCalls: 5              # 最少收到 5 次請求才開始計算臨界值
+        failureRateThreshold: 50             # 錯誤率達到 50% 即引爆熔斷（進入 OPEN 狀態）
+        slowCallRateThreshold: 70            # 慢調用率達到 70% 亦觸發熔斷
+        slowCallDurationThreshold: 3000ms    # 超過 3 秒視為慢調用
+        waitDurationInOpenState: 10000ms     # 熔斷器開啟後，等待 10 秒後進入半開啟（HALF_OPEN）
+        permittedNumberOfCallsInHalfOpenState: 3 # 在半開啟狀態下放行 3 次請求進行健康探測
+
+      # 認證服務專屬熔斷防線
+      authCircuitBreaker:
+        slidingWindowSize: 20
+        failureRateThreshold: 60
+        waitDurationInOpenState: 5000ms
