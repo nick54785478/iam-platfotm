@@ -260,7 +260,7 @@ public class DepartmentCommandController {
 	 * @param tenantId     租戶 ID (由 API Gateway 統一過濾並透過安全 Header 帶入)
 	 * @param operator     操作管理員 ID
 	 * @param departmentId 欲執行從地獄復活的部門 ID
-	 * @return {@code 200 OK} 無 Payload 回傳
+	 * @return {@link DepartmentRestoredResource}
 	 */
 	@PostMapping("/{departmentId}/restore")
 	public ResponseEntity<DepartmentRestoredResource> restoreDepartment(@RequestHeader("X-Tenant-Id") String tenantId,
@@ -283,7 +283,7 @@ public class DepartmentCommandController {
 	 * @param tenantId     租戶識別碼
 	 * @param operator     操作者 ID
 	 * @param requestNodes 包含多層級巢狀結構的根節點 Payload Resource
-	 * @return {@code 201 Created} 批量建樹事務接受成功
+	 * @return {@link DepartmentTreeCreatedResource} 批量建樹事務接受成功
 	 */
 	@PostMapping("/tree")
 	public ResponseEntity<DepartmentTreeCreatedResource> createDepartmentTree(
