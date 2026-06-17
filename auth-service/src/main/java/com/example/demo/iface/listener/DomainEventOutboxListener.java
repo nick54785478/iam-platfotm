@@ -11,7 +11,7 @@ import com.example.demo.application.domain.user.event.UserChangedEvent;
 import com.example.demo.application.shared.event.DomainEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
 import com.example.demo.infra.outbox.entity.OutboxEventDbEntity;
-import com.example.demo.infra.outbox.repository.SpringDataOutboxRepository;
+import com.example.demo.infra.outbox.repository.OutboxRepository;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -26,10 +26,10 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class DomainEventOutboxListener {
 
-	private final SpringDataOutboxRepository outboxRepository;
+	private final OutboxRepository outboxRepository;
 	private final ObjectMapper objectMapper;
 
-	public DomainEventOutboxListener(SpringDataOutboxRepository outboxRepository, ObjectMapper objectMapper) {
+	public DomainEventOutboxListener(OutboxRepository outboxRepository, ObjectMapper objectMapper) {
 		this.outboxRepository = outboxRepository;
 		this.objectMapper = objectMapper;
 	}

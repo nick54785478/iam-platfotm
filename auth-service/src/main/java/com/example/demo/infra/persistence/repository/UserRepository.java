@@ -6,14 +6,14 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.infra.persistence.entity.user.UserDbEntity;
+import com.example.demo.infra.persistence.entity.user.UserEntity;
 
 @Repository
-public interface SpringDataUserRepository extends JpaRepository<UserDbEntity, UUID> {
+public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
 	// 多租戶安全查詢：根據租戶 ID 與用戶 ID 查詢
-	Optional<UserDbEntity> findByTenantIdAndId(String tenantId, UUID id);
+	Optional<UserEntity> findByTenantIdAndId(String tenantId, UUID id);
 
 	// 多租戶安全查詢：根據租戶 ID 與用戶名查詢（用於登入）
-	Optional<UserDbEntity> findByTenantIdAndUsername(String tenantId, String username);
+	Optional<UserEntity> findByTenantIdAndUsername(String tenantId, String username);
 }

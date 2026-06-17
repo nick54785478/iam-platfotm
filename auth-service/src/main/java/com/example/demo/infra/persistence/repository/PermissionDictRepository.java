@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface SpringDataPermissionDictRepository extends JpaRepository<PermissionDictView, Long> {
+public interface PermissionDictRepository extends JpaRepository<PermissionDictView, Long> {
 
     Optional<PermissionDictView> findByTenantIdAndCode(String tenantId, String code);
 }

@@ -40,7 +40,7 @@ import jakarta.persistence.Table;
 @Table(name = "auth_roles", indexes = {
 		// 加上明確的表名前綴 auth_roles，與讀取側 View 複合索引名稱乾淨錯開
 		@Index(name = "idx_auth_roles_tenant_code", columnList = "tenant_id, role_code", unique = true) })
-public class RoleDbEntity {
+public class RoleEntity {
 
 	@Id
 	@Column(name = "id", nullable = false)
@@ -63,14 +63,14 @@ public class RoleDbEntity {
 	@CollectionTable(name = "auth_roles_permissions", joinColumns = @JoinColumn(name = "role_id"))
 	private Set<PermissionEmbeddable> permissions = new HashSet<>();
 
-	protected RoleDbEntity() {
+	protected RoleEntity() {
 	}
 
 	/**
 	 * <b>【充血轉換】Domain 模型 ➡️ DB Entity 儲存結構</b>
 	 */
-	public static RoleDbEntity fromDomain(Role role, String tenantId) {
-		RoleDbEntity entity = new RoleDbEntity();
+	public static RoleEntity fromDomain(Role role, String tenantId) {
+		RoleEntity entity = new RoleEntity();
 		entity.id = role.getId().value();
 		entity.tenantId = tenantId;
 		entity.roleCode = role.getRoleCode();

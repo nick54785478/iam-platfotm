@@ -33,7 +33,7 @@ import jakarta.persistence.UniqueConstraint;
 @Entity
 @Table(name = "auth_users", uniqueConstraints = {
 		@UniqueConstraint(name = "uk_auth_users_tenant_username", columnNames = { "tenant_id", "username" }) })
-public class UserDbEntity {
+public class UserEntity {
 
 	@Id
 	@Column(name = "id", updatable = false, nullable = false)
@@ -63,14 +63,14 @@ public class UserDbEntity {
 	@Column(name = "role_id")
 	private Set<UUID> assignedRoleIds = new HashSet<>();
 
-	protected UserDbEntity() {
+	protected UserEntity() {
 	}
 
 	/**
 	 * <b>【充血轉換】Domain 模型 ➡️ DB Entity 儲存結構</b>
 	 */
-	public static UserDbEntity fromDomain(User user, String tenantId) {
-		UserDbEntity entity = new UserDbEntity();
+	public static UserEntity fromDomain(User user, String tenantId) {
+		UserEntity entity = new UserEntity();
 		entity.id = user.getId().value();
 		entity.tenantId = tenantId;
 		entity.updateFromDomain(user);

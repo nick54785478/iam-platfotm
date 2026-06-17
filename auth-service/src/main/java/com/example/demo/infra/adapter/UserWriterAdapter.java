@@ -12,16 +12,16 @@ import com.example.demo.application.port.UserWriterPort;
 import com.example.demo.application.shared.event.DomainEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
-import com.example.demo.infra.persistence.entity.user.UserDbEntity;
-import com.example.demo.infra.persistence.repository.SpringDataUserRepository;
+import com.example.demo.infra.persistence.entity.user.UserEntity;
+import com.example.demo.infra.persistence.repository.UserRepository;
 
 @Component
 class UserWriterAdapter implements UserWriterPort {
 
-	private final SpringDataUserRepository jpaRepository;
+	private final UserRepository jpaRepository;
 	private final ApplicationEventPublisher eventPublisher; // 👈 搬到這裡
 
-	public UserWriterAdapter(SpringDataUserRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
+	public UserWriterAdapter(UserRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
 		this.jpaRepository = jpaRepository;
 		this.eventPublisher = eventPublisher;
 	}
@@ -29,13 +29,13 @@ class UserWriterAdapter implements UserWriterPort {
 	@Override
 	public Optional<User> findById(UserId id) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
-		return jpaRepository.findByTenantIdAndId(currentTenantId, id.value()).map(UserDbEntity::toDomain);
+		return jpaRepository.findByTenantIdAndId(currentTenantId, id.value()).map(UserEntity::toDomain);
 	}
 
 	@Override
 	public Optional<User> findByUsername(String username) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
-		return jpaRepository.findByTenantIdAndUsername(currentTenantId, username).map(UserDbEntity::toDomain);
+		return jpaRepository.findByTenantIdAndUsername(currentTenantId, username).map(UserEntity::toDomain);
 	}
 
 	@Override
@@ -44,14 +44,14 @@ class UserWriterAdapter implements UserWriterPort {
 		String currentTenantId = TenantContext.getCurrentTenantId();
 
 		// 2. 儲存業務資料（與之前一致）
-		Optional<UserDbEntity> existingEntity = jpaRepository.findByTenantIdAndId(currentTenantId,
+		Optional<UserEntity> existingEntity = jpaRepository.findByTenantIdAndId(currentTenantId,
 				user.getId().value());
 		if (existingEntity.isPresent()) {
-			UserDbEntity dbEntity = existingEntity.get();
+			UserEntity dbEntity = existingEntity.get();
 			dbEntity.updateFromDomain(user);
 			jpaRepository.save(dbEntity);
 		} else {
-			UserDbEntity newEntity = UserDbEntity.fromDomain(user, currentTenantId);
+			UserEntity newEntity = UserEntity.fromDomain(user, currentTenantId);
 			jpaRepository.save(newEntity);
 		}
 

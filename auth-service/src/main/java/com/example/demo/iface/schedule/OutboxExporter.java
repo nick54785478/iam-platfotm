@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.application.port.OutboxEventPublisherPort;
 import com.example.demo.infra.outbox.entity.OutboxEventDbEntity;
-import com.example.demo.infra.outbox.repository.SpringDataOutboxRepository;
+import com.example.demo.infra.outbox.repository.OutboxRepository;
 
 /**
  * <h2>[基礎設施層 - 排程引擎] Outbox 事件導流與發射器 (Outbox Exporter)</h2>
@@ -30,11 +30,11 @@ import com.example.demo.infra.outbox.repository.SpringDataOutboxRepository;
 @Component
 public class OutboxExporter {
 
-	private final SpringDataOutboxRepository outboxRepository;
+	private final OutboxRepository outboxRepository;
 	private final OutboxEventPublisherPort outboxEventPublisherPort; // 🚀 面向規格程式設計，解耦本地記憶體與未來 Kafka
 
-	public OutboxExporter(SpringDataOutboxRepository outboxRepository,
-			OutboxEventPublisherPort outboxEventPublisherPort) {
+	public OutboxExporter(OutboxRepository outboxRepository,
+                          OutboxEventPublisherPort outboxEventPublisherPort) {
 		this.outboxRepository = outboxRepository;
 		this.outboxEventPublisherPort = outboxEventPublisherPort;
 	}

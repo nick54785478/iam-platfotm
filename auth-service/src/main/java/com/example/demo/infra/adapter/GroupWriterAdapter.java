@@ -13,8 +13,8 @@ import com.example.demo.application.port.GroupWriterPort;
 import com.example.demo.application.shared.event.DomainEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
-import com.example.demo.infra.persistence.entity.group.GroupDbEntity;
-import com.example.demo.infra.persistence.repository.SpringDataGroupRepository;
+import com.example.demo.infra.persistence.entity.group.GroupEntity;
+import com.example.demo.infra.persistence.repository.GroupRepository;
 
 /**
  * <h2>[基礎設施層 - 適配器] 群組寫入側持久化適配器 (Group Writer Adapter) - 完全體</h2>
@@ -22,10 +22,10 @@ import com.example.demo.infra.persistence.repository.SpringDataGroupRepository;
 @Component
 public class GroupWriterAdapter implements GroupWriterPort {
 
-    private final SpringDataGroupRepository groupRepository;
+    private final GroupRepository groupRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    public GroupWriterAdapter(SpringDataGroupRepository groupRepository, ApplicationEventPublisher eventPublisher) {
+    public GroupWriterAdapter(GroupRepository groupRepository, ApplicationEventPublisher eventPublisher) {
         this.groupRepository = groupRepository;
         this.eventPublisher = eventPublisher;
     }
@@ -34,14 +34,14 @@ public class GroupWriterAdapter implements GroupWriterPort {
     public Optional<Group> findById(GroupId id) {
         String currentTenantId = TenantContext.getCurrentTenantId();
         return groupRepository.findByTenantIdAndId(currentTenantId, id.value())
-                .map(GroupDbEntity::toDomain);
+                .map(GroupEntity::toDomain);
     }
 
     @Override
     public Optional<Group> findByGroupCode(String groupCode) {
         String currentTenantId = TenantContext.getCurrentTenantId();
         return groupRepository.findByTenantIdAndGroupCode(currentTenantId, groupCode)
-                .map(GroupDbEntity::toDomain);
+                .map(GroupEntity::toDomain);
     }
 
     /**
@@ -57,21 +57,21 @@ public class GroupWriterAdapter implements GroupWriterPort {
         // 透過 JPA 內嵌集合查詢，精準阻斷跨租戶漏洞，並將結果還原 (Rehydration) 為領域充血模型
         return groupRepository.findByTenantIdAndMemberUserIdsContaining(currentTenantId, userId.value())
         		.stream()
-        		.map(GroupDbEntity::toDomain)
+        		.map(GroupEntity::toDomain)
         		.toList();
     }
 
     @Override
     public void save(Group group) {
         String currentTenantId = TenantContext.getCurrentTenantId();
-        Optional<GroupDbEntity> existingEntityOpt = groupRepository.findByTenantIdAndId(currentTenantId, group.getId().value());
+        Optional<GroupEntity> existingEntityOpt = groupRepository.findByTenantIdAndId(currentTenantId, group.getId().value());
 
         if (existingEntityOpt.isPresent()) {
-            GroupDbEntity existingEntity = existingEntityOpt.get();
+            GroupEntity existingEntity = existingEntityOpt.get();
             existingEntity.updateFromDomain(group);
             groupRepository.save(existingEntity);
         } else {
-            GroupDbEntity newEntity = GroupDbEntity.fromDomain(group, currentTenantId);
+            GroupEntity newEntity = GroupEntity.fromDomain(group, currentTenantId);
             groupRepository.save(newEntity);
         }
 

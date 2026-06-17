@@ -15,8 +15,8 @@ import com.example.demo.application.port.RoleWriterPort;
 import com.example.demo.application.shared.event.DomainEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
-import com.example.demo.infra.persistence.entity.role.RoleDbEntity;
-import com.example.demo.infra.persistence.repository.SpringDataRoleRepository;
+import com.example.demo.infra.persistence.entity.role.RoleEntity;
+import com.example.demo.infra.persistence.repository.RoleRepository;
 
 /**
  * <h2>[基礎設施層 - 適配器] 角色寫入側持久化適配器 (Role Writer Adapter) - 完全體</h2>
@@ -24,10 +24,10 @@ import com.example.demo.infra.persistence.repository.SpringDataRoleRepository;
 @Component
 public class RoleWriterAdapter implements RoleWriterPort {
 
-	private final SpringDataRoleRepository jpaRepository;
+	private final RoleRepository jpaRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
-	public RoleWriterAdapter(SpringDataRoleRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
+	public RoleWriterAdapter(RoleRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
 		this.jpaRepository = jpaRepository;
 		this.eventPublisher = eventPublisher;
 	}
@@ -35,13 +35,13 @@ public class RoleWriterAdapter implements RoleWriterPort {
 	@Override
 	public Optional<Role> findById(RoleId id) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
-		return jpaRepository.findByTenantIdAndId(currentTenantId, id.value()).map(RoleDbEntity::toDomain);
+		return jpaRepository.findByTenantIdAndId(currentTenantId, id.value()).map(RoleEntity::toDomain);
 	}
 
 	@Override
 	public Optional<Role> findByRoleCode(String roleCode) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
-		return jpaRepository.findByTenantIdAndRoleCode(currentTenantId, roleCode).map(RoleDbEntity::toDomain);
+		return jpaRepository.findByTenantIdAndRoleCode(currentTenantId, roleCode).map(RoleEntity::toDomain);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class RoleWriterAdapter implements RoleWriterPort {
 		Set<UUID> uuids = roleIds.stream().map(RoleId::value).collect(Collectors.toSet());
 
 		// 批次查詢並抽取出 roleCode
-		return jpaRepository.findByTenantIdAndIdIn(currentTenantId, uuids).stream().map(RoleDbEntity::getRoleCode)
+		return jpaRepository.findByTenantIdAndIdIn(currentTenantId, uuids).stream().map(RoleEntity::getRoleCode)
 				.collect(Collectors.toSet());
 	}
 
@@ -94,14 +94,14 @@ public class RoleWriterAdapter implements RoleWriterPort {
 	@Override
 	public void save(Role role) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
-		Optional<RoleDbEntity> existingEntity = jpaRepository.findByTenantIdAndId(currentTenantId,
+		Optional<RoleEntity> existingEntity = jpaRepository.findByTenantIdAndId(currentTenantId,
 				role.getId().value());
 		if (existingEntity.isPresent()) {
-			RoleDbEntity dbEntity = existingEntity.get();
+			RoleEntity dbEntity = existingEntity.get();
 			dbEntity.updateFromDomain(role);
 			jpaRepository.save(dbEntity);
 		} else {
-			RoleDbEntity newEntity = RoleDbEntity.fromDomain(role, currentTenantId);
+			RoleEntity newEntity = RoleEntity.fromDomain(role, currentTenantId);
 			jpaRepository.save(newEntity);
 		}
 

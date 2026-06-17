@@ -33,7 +33,7 @@ import jakarta.persistence.Table;
 @Table(name = "auth_groups", indexes = {
 		// 🚀 頂規優化：加上專屬表名前綴，與讀取側 View 複合索引名稱乾淨錯開
 		@Index(name = "idx_auth_groups_tenant_code", columnList = "tenant_id, group_code", unique = true) })
-public class GroupDbEntity {
+public class GroupEntity {
 
 	@Id
 	@Column(name = "id", nullable = false)
@@ -61,14 +61,14 @@ public class GroupDbEntity {
 	private Set<UUID> assignedRoleIds = new HashSet<>();
 
 	/** JPA 規範要求的無參建構式 */
-	protected GroupDbEntity() {
+	protected GroupEntity() {
 	}
 
 	/**
 	 * <b>【充血轉換】Domain 模型 ➡️ DB Entity 儲存結構</b>
 	 */
-	public static GroupDbEntity fromDomain(Group group, String tenantId) {
-		GroupDbEntity entity = new GroupDbEntity();
+	public static GroupEntity fromDomain(Group group, String tenantId) {
+		GroupEntity entity = new GroupEntity();
 		entity.id = group.getId().value();
 		entity.tenantId = tenantId;
 		entity.groupCode = group.getGroupCode();

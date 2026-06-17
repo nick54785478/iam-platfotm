@@ -1,6 +1,6 @@
 package com.example.demo.iface.listener;
 
-import com.example.demo.infra.persistence.repository.SpringDataPermissionDictRepository;
+import com.example.demo.infra.persistence.repository.PermissionDictRepository;
 import com.example.demo.infra.projection.view.PermissionDictView;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PermissionEventHandler {
 
-    private final SpringDataPermissionDictRepository jpaRepo;
+    private final PermissionDictRepository jpaRepo;
     private final ObjectMapper objectMapper;
 
     @Transactional
