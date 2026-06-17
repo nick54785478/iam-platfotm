@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.application.port.RoleReaderPort;
 import com.example.demo.application.shared.dto.RoleRepresentation;
 import com.example.demo.application.shared.dto.RoleRepresentation.PermissionDto;
-import com.example.demo.infra.projection.repository.SpringDataRoleViewRepository;
+import com.example.demo.infra.projection.repository.RoleViewRepository;
 import com.example.demo.infra.projection.view.RoleView;
 
 import tools.jackson.core.type.TypeReference;
@@ -19,10 +19,10 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 class RoleReaderAdapter implements RoleReaderPort {
 
-	private final SpringDataRoleViewRepository viewRepository;
+	private final RoleViewRepository viewRepository;
 	private final ObjectMapper objectMapper;
 
-	public RoleReaderAdapter(SpringDataRoleViewRepository viewRepository, ObjectMapper objectMapper) {
+	public RoleReaderAdapter(RoleViewRepository viewRepository, ObjectMapper objectMapper) {
 		this.viewRepository = viewRepository;
 		this.objectMapper = objectMapper;
 	}

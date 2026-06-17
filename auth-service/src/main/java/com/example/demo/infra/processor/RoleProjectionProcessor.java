@@ -13,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.demo.application.domain.role.event.RoleChangedEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
-import com.example.demo.infra.projection.repository.SpringDataRoleViewRepository;
+import com.example.demo.infra.projection.repository.RoleViewRepository;
 import com.example.demo.infra.projection.view.RoleView;
 
 import tools.jackson.databind.ObjectMapper;
@@ -29,10 +29,10 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class RoleProjectionProcessor {
 
-	private final SpringDataRoleViewRepository viewRepository;
+	private final RoleViewRepository viewRepository;
 	private final ObjectMapper objectMapper;
 
-	public RoleProjectionProcessor(SpringDataRoleViewRepository viewRepository, ObjectMapper objectMapper) {
+	public RoleProjectionProcessor(RoleViewRepository viewRepository, ObjectMapper objectMapper) {
 		this.viewRepository = viewRepository;
 		this.objectMapper = objectMapper;
 	}

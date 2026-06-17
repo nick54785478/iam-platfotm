@@ -32,6 +32,16 @@ import jakarta.servlet.http.HttpServletResponse;
 public class DeptPermissionHeaderFilter implements Filter {
 
 	/**
+	 * 綠色通道矩陣 (Whitelist)
+	 * <p>
+	 * 包含系統登入/註冊入口，以及 DevOps 監控與開發者文件端點。這些路徑允許匿名流量直接穿透。
+	 * </p>
+	 */
+	private static final List<String> EXCLUDED_PREFIXES = List.of("/api/auth/login", "/api/auth/register", "/actuator",
+			"/swagger-ui", "/v3/api-docs", "/h2-console");
+
+
+	/**
 	 * 執行核心 HTTP 請求過濾與授權校驗邏輯。
 	 *
 	 * @param request  Servlet 請求
@@ -53,10 +63,16 @@ public class DeptPermissionHeaderFilter implements Filter {
 		 * OpenAPI 文件、Swagger UI 面板以及 Actuator 狀態監控。 這些端點由內部運維管線或開發人員調用，無需業務權限校驗。
 		 * </pre>
 		 */
-		if (path.contains("/v3/api-docs") || path.contains("/swagger-ui") || path.contains("/actuator")) {
+		// 1. 綠色通道比對：若命中白名單，直接放行交由 Spring MVC 處理
+		boolean isExcluded = EXCLUDED_PREFIXES.stream().anyMatch(path::contains);
+		if (isExcluded) {
 			chain.doFilter(request, response);
 			return;
 		}
+//		if (!EXCLUDED_PREFIXES.contains(path)) {
+//			chain.doFilter(request, response);
+//			return;
+//		}
 
 		/**
 		 * 2. 防繞過物理防線 (Anti-Bypass Gateway Check)

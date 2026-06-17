@@ -13,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.demo.application.domain.user.event.UserChangedEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
-import com.example.demo.infra.projection.repository.SpringDataUserViewRepository;
+import com.example.demo.infra.projection.repository.UserViewRepository;
 import com.example.demo.infra.projection.view.UserView;
 
 /**
@@ -27,9 +27,9 @@ import com.example.demo.infra.projection.view.UserView;
 @Component
 public class UserProjectionProcessor {
 
-	private final SpringDataUserViewRepository viewRepository;
+	private final UserViewRepository viewRepository;
 
-	public UserProjectionProcessor(SpringDataUserViewRepository viewRepository) {
+	public UserProjectionProcessor(UserViewRepository viewRepository) {
 		this.viewRepository = viewRepository;
 	}
 

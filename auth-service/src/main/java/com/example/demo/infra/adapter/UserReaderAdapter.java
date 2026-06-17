@@ -7,15 +7,15 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.application.port.UserReaderPort;
 import com.example.demo.application.shared.dto.UserRepresentation;
-import com.example.demo.infra.projection.repository.SpringDataUserViewRepository;
+import com.example.demo.infra.projection.repository.UserViewRepository;
 import com.example.demo.infra.projection.view.UserView;
 
 @Component
 class UserReaderAdapter implements UserReaderPort {
 
-	private final SpringDataUserViewRepository viewRepository;
+	private final UserViewRepository viewRepository;
 
-	public UserReaderAdapter(SpringDataUserViewRepository viewRepository) {
+	public UserReaderAdapter(UserViewRepository viewRepository) {
 		this.viewRepository = viewRepository;
 	}
 

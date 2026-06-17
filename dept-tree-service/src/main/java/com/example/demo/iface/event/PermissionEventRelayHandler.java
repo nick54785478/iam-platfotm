@@ -29,7 +29,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PermissionKafkaRelayHandler {
+public class PermissionEventRelayHandler {
 
     private final ObjectMapper objectMapper;
 
@@ -40,7 +40,7 @@ public class PermissionKafkaRelayHandler {
      * 權限事件專屬 Kafka Topic
      * 命名規範：[類型].[領域邊界].[實體].[事件].[版本]
      */
-    private static final String TOPIC_PERMISSION_EVENTS = "topic.dept.permission.events.v1";
+    private static final String TOPIC_PERMISSION_EVENTS = "topic.auth.permission";
 
     /**
      * 攔截並轉拋：權限建立事件

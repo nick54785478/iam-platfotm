@@ -6,11 +6,11 @@ import com.example.demo.application.domain.permission.event.PermissionDefinition
 import com.example.demo.application.domain.permission.event.PermissionDefinitionUpdatedEvent;
 import com.example.demo.application.domain.shared.core.BaseAggregateRoot;
 import com.example.demo.application.domain.shared.vo.TenantId;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -29,17 +29,19 @@ import java.util.Objects;
 @Table(
         name = "sys_permissions",
         uniqueConstraints = {
-                // 🛡️ 物理防線：確保同一個租戶下的「權限代碼」絕對不會重複
+                // 物理防線：確保同一個租戶下的「權限代碼」絕對不會重複
                 @UniqueConstraint(name = "uk_tenant_code", columnNames = {"tenant_id", "code"})
         }
 )
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // 🌟 僅供 Hibernate 反射使用，嚴禁外部隨意 new
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 僅供 Hibernate 反射使用，嚴禁外部隨意 new
 public class PermissionDefinition extends BaseAggregateRoot {
 
     /**
      * 權限唯一識別碼 (Aggregate ID)
      */
     @EmbeddedId
+    // 🌟 加上這行：明確將 VO 的 value 屬性映射到資料庫的 id 欄位，避開保留字衝突
+    @AttributeOverride(name = "value", column = @Column(name = "id", length = 36, nullable = false))
     private PermissionId id;
 
     /**

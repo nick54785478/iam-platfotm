@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.infra.projection.view.RoleView;
 
 @Repository
-public interface SpringDataRoleViewRepository extends JpaRepository<RoleView, UUID> {
+public interface RoleViewRepository extends JpaRepository<RoleView, UUID> {
 
 	/**
 	 * 🚀 供 RoleReaderAdapter 呼叫：完全對齊以業務鍵 roleCode 為主角的 API 規格 底層會直接轟擊 (tenant_id,

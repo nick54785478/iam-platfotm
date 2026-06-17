@@ -13,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.demo.application.domain.group.event.GroupChangedEvent;
 import com.example.demo.application.shared.event.TenantEventEnvelope;
-import com.example.demo.infra.projection.repository.SpringDataGroupViewRepository;
+import com.example.demo.infra.projection.repository.GroupViewRepository;
 import com.example.demo.infra.projection.view.GroupView;
 
 /**
@@ -27,9 +27,9 @@ import com.example.demo.infra.projection.view.GroupView;
 @Component
 public class GroupProjectionProcessor {
 
-	private final SpringDataGroupViewRepository viewRepository;
+	private final GroupViewRepository viewRepository;
 
-	public GroupProjectionProcessor(SpringDataGroupViewRepository viewRepository) {
+	public GroupProjectionProcessor(GroupViewRepository viewRepository) {
 		this.viewRepository = viewRepository;
 	}
 

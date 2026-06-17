@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.example.demo.infra.projection.view.GroupView;
 
 @Repository
-public interface SpringDataGroupViewRepository extends JpaRepository<GroupView, UUID> {
+public interface GroupViewRepository extends JpaRepository<GroupView, UUID> {
 	
 	Optional<GroupView> findByTenantIdAndId(String tenantId, UUID id);
 
