@@ -18,16 +18,18 @@ public class PermissionDefinitionCreatedEvent extends DomainEvent {
     private String name;
     private String description;
     private String module;
+    private long version;
 
     public PermissionDefinitionCreatedEvent(
             String tenantId, String permissionId, String code,
-            String name, String description, String module, String operator) {
+            String name, String description, String module, String operator, long version) {
         super(tenantId, operator);
         this.permissionId = permissionId;
         this.code = code;
         this.name = name;
         this.description = description;
         this.module = module;
+        this.version = version;
     }
 
     @Override

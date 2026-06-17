@@ -59,19 +59,26 @@ public class PermissionEventHandler {
             String description = payload.path("description").asText();
             String module = payload.path("module").asText();
 
-            log.info("[CQRS-Projection] 準備執行充血模型投影變更 - Code: {}", code);
+            long eventVersion = payload.path("version").asLong(0L); // 🚀 萃取版本號
 
-            // 4. 進行純粹的 Java 物件充血投影
+            log.info("[CQRS-Projection] 準備執行充血模型投影變更 - Code: {}, EventVersion: {}", code, eventVersion);
+
             jpaRepo.findByTenantIdAndCode(tenantId, code)
                     .ifPresentOrElse(
                             existing -> {
-                                existing.syncDetails(name, description, module);
-                                jpaRepo.save(existing);
-                                log.info("[CQRS-Projection] 充血投影更新完成: {}", code);
+                                // 🟢 實體內部自行判斷版本，若回傳 false 代表這是舊事件，直接吃掉不存 DB
+                                boolean isUpdated = existing.syncDetails(name, description, module, eventVersion);
+                                if (isUpdated) {
+                                    jpaRepo.save(existing);
+                                    log.info("[CQRS-Projection] 充血投影更新完成: {}", code);
+                                } else {
+                                    log.debug("[CQRS-Projection] 忽略亂序或重複的舊事件: {}", code);
+                                }
                             },
                             () -> {
+                                // 🟢 新增時，一併把初始版本號塞進去
                                 PermissionDictView newPo = PermissionDictView.createNew(
-                                        permId, tenantId, code, name, description, module
+                                        permId, tenantId, code, name, description, module, eventVersion
                                 );
                                 jpaRepo.save(newPo);
                                 log.info("[CQRS-Projection] 充血投影創建完成: {}", code);

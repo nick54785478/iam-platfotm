@@ -153,9 +153,8 @@ public class PermissionDefinition extends BaseAggregateRoot {
         );
 
         // 發布建立事件，準備廣播給 AuthService 註冊新權限
-        permission.raise(new PermissionDefinitionCreatedEvent(
-                tenantId.getValue(), id.getValue(), code.getValue(), name, description, module, operator
-        ));
+        permission.raise(new PermissionDefinitionCreatedEvent(tenantId.getValue(), id.getValue(),
+                code.getValue(), name, description, module, operator, permission.version));
 
         return permission;
     }

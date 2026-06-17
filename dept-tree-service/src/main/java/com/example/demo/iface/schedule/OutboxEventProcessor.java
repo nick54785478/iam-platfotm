@@ -55,14 +55,14 @@ public class OutboxEventProcessor {
 	public void process() {
 		log.trace("OutboxEventProcessor checking for pending events...");
 
-		// 💡 1. 範圍最大 (Outer Scope)：取得分散式鎖
+		// 1. 範圍最大 (Outer Scope)：取得分散式鎖
 		// 確保同一時間叢集中只有一台機器能進入這段邏輯。
 		// 設定 2 分鐘的超時時間 (Lock Duration)，防止這台機器中途崩潰 (Crash) 導致死鎖。
 		distributedLockManager.executeWithLock(LOCK_KEY, Duration.ofMinutes(2), () -> {
 
 			log.debug("Distributed lock [{}] acquired, starting event processing.", LOCK_KEY);
 
-			// 💡 2. 範圍居中 (Inner Scope)：開啟資料庫交易 (Database Transaction)
+			// 2. 範圍居中 (Inner Scope)：開啟資料庫交易 (Database Transaction)
 			// 使用 TransactionTemplate 而非 @Transactional，是為了精準控制交易的啟動與提交時機。
 			transactionTemplate.executeWithoutResult(status -> {
 
