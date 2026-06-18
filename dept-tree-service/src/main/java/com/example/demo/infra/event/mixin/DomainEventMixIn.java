@@ -1,6 +1,6 @@
 package com.example.demo.infra.event.mixin;
 
-import com.example.demo.config.JacksonConfiguration;
+import com.example.demo.config.config.JacksonConfiguration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
