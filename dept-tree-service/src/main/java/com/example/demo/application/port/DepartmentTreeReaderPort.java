@@ -1,10 +1,11 @@
 package com.example.demo.application.port;
 
+import com.example.demo.application.shared.dto.DepartmentNode;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.example.demo.infra.shared.dto.DepartmentNode;
 
 /**
  * Department Tree Reader Port (讀取端 - 組織樹查詢合約)
@@ -24,7 +25,7 @@ public interface DepartmentTreeReaderPort {
 	 * </p>
 	 *
 	 * @param tenantId         租戶識別碼
-	 * @param rootDepartmentId 起始樹根的部門唯一識別碼
+	 * @param rootId 起始樹根的部門唯一識別碼
 	 * @param includeDisabled  是否包含狀態為 DISABLED 的節點
 	 * @return 經由樹狀深度 (Depth) 升序與排序權重 (SortOrder) 複合排列後的扁平化節點列表
 	 */
@@ -62,7 +63,7 @@ public interface DepartmentTreeReaderPort {
 	List<DepartmentNode> findDirectChildren(String tenantId, String parentId);
 
 	/**
-	 * 🌟 高效能批次關聯查詢：獲取一組部門的員工映射表。
+	 * 高效能批次關聯查詢：獲取一組部門的員工映射表。
 	 * <p>
 	 * 直擊 department_employees_view 投影表，利用複合索引優化提供高速回傳。
 	 * </p>

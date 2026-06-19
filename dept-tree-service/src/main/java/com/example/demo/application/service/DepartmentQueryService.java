@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.example.demo.application.shared.dto.DepartmentNode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.application.port.DepartmentTreeReaderPort;
 import com.example.demo.application.shared.dto.DepartmentHierarchyGottenResult;
 import com.example.demo.infra.shared.dto.DepartmentFlatNodeGottenView;
-import com.example.demo.infra.shared.dto.DepartmentNode;
 import com.example.demo.infra.shared.dto.DepartmentTreeNodeGottenView;
 
 import lombok.RequiredArgsConstructor;

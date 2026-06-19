@@ -3,7 +3,6 @@ package com.example.demo.application.shared.dto;
 import java.util.List;
 
 import com.example.demo.application.service.DepartmentQueryService;
-import com.example.demo.infra.shared.dto.DepartmentNode;
 
 /**
  * Department Tree Node Gotten View (讀取端 - 樹狀階層節點視圖)

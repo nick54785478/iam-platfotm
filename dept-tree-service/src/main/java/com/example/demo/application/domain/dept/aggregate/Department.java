@@ -120,27 +120,6 @@ public class Department extends BaseAggregateRoot {
     private String deletedBy;
 
     // ==================================================
-    // 領域事件基礎設施中樞 (Domain Event Infrastructure)
-    // ==================================================
-
-//    @Transient
-//    private final List<DomainEvent> domainEvents = new ArrayList<>();
-//
-//    @DomainEvents
-//    public List<DomainEvent> getDomainEvents() {
-//        return Collections.unmodifiableList(domainEvents);
-//    }
-//
-//    @AfterDomainEventPublication
-//    public void clearDomainEvents() {
-//        this.domainEvents.clear();
-//    }
-//
-//    private void raise(DomainEvent event) {
-//        domainEvents.add(event);
-//    }
-
-    // ==================================================
     // Constructor (嚴密閉合的建構子)
     // ==================================================
 
@@ -225,8 +204,9 @@ public class Department extends BaseAggregateRoot {
         String newParentIdValue = newParentId.getValue();
         String subtreeRootId = this.id.getValue();
 
-        if (newParentIdValue.equals(oldParentIdValue))
+        if (newParentIdValue.equals(oldParentIdValue)) {
             return;
+        }
 
         this.parentId = newParentId;
         touch(operator);
@@ -308,7 +288,7 @@ public class Department extends BaseAggregateRoot {
     /**
      * 人員指派：將員工編制分配進此部門聚合範圍內。
      * <p>
-     * 💡 <b>狀態演進：</b> 寫入端僅增加 {@code activeEmployeeCount} 計數器，並發射「人員指派事件」。
+     * <b>狀態演進：</b> 寫入端僅增加 {@code activeEmployeeCount} 計數器，並發射「人員指派事件」。
      * 藉由維護此輕量級計數，即刻具備防禦非法停用的能力。
      * </p>
      */
