@@ -76,7 +76,22 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
                 .addValue("tenantId", tenantId)
                 .addValue("rootId", rootId);
 
-        return jdbcTemplate.query(sql.toString(), params, (rs, rowNum) -> mapRowToNode(rs));
+        List<DepartmentNode> result = jdbcTemplate.query(sql.toString(), params, (rs, rowNum) -> mapRowToNode(rs));
+
+        // 3. 關鍵修復：懶加載回填機制 (Cache-Aside Populate)
+        // 既然都花時間查 SQL 了，就把結果回填給 Redis，造福後面的查詢請求！
+        if (!result.isEmpty()) {
+            try {
+                String resultJson = objectMapper.writeValueAsString(result);
+                // 針對這種非主動預熱的子查詢，設定 2 小時的 TTL 避免吃光記憶體
+                redisTemplate.opsForValue().set(redisKey, resultJson, java.time.Duration.ofHours(2));
+                log.info("[CQRS-Query] 已將查詢結果回填至 Redis 讀取模型: Subtree [{}]", rootId);
+            } catch (Exception e) {
+                log.warn("[CQRS-Query] 嘗試回填 Redis 失敗，但不影響 API 正常運作", e);
+            }
+        }
+
+        return result;
     }
 
     @Override

@@ -59,10 +59,8 @@ public class DepartmentQueryController {
 	@GetMapping("/{tenantId}/{id}/tree")
 	public ResponseEntity<DepartmentTreeNodeGottenView> getTree(@PathVariable String tenantId, @PathVariable String id,
 			@RequestParam(required = false, defaultValue = "false") boolean includeDisabled) {
-
-		// 🌟 將 Flag 往下傳遞給 Application Service
+		// 將 Flag 往下傳遞給 Application Service
 		DepartmentTreeNodeGottenView tree = queryService.getTree(tenantId, id, includeDisabled);
-
 		return ResponseEntity.ok(tree);
 	}
 

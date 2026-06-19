@@ -81,7 +81,7 @@ public class GatewayRoutesConfiguration {
 				 */
 				.and(route("department-service-route")
 						.route(path("/api/departments/**"), http())
-						.filter(ipRateLimiter(rateLimiter, "dept-api", 2, 10))
+						.filter(ipRateLimiter(rateLimiter, "dept-api", 10, 10))
 						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
 						.filter(circuitBreaker("deptCircuitBreaker", URI.create("forward:/fallback/department")))
 						.before(uri("http://localhost:8081"))
