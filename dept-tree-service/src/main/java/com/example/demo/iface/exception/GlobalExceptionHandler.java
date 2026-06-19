@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(DomainException.class)
-	public ResponseEntity<BaseExceptionResponse> handleValidationException(DomainException e) {
+	public ResponseEntity<BaseExceptionResponse> handleDomainException(DomainException e) {
 		return ResponseEntity.status(HttpStatus.OK).body(new BaseExceptionResponse("DOMAIN_EXCEPTION", e.getMessage()));
 	}
 
@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<BaseExceptionResponse> handleIllegalArgumentException(IllegalArgumentException e) {
 		return ResponseEntity.status(HttpStatus.OK).body(new BaseExceptionResponse("ILLEGAL_ARGUMENT", e.getMessage()));
 	}
+
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<BaseExceptionResponse> handleIllegalStateException(IllegalStateException e) {
+		return ResponseEntity.status(HttpStatus.OK).body(new BaseExceptionResponse("ILLEGAL_STATUS", e.getMessage()));
+	}
+
 
 	/**
 	 * 回傳訊息定義
