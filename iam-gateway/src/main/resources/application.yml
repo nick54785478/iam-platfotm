@@ -44,3 +44,7 @@ resilience4j:
         slidingWindowSize: 20
         failureRateThreshold: 60
         waitDurationInOpenState: 5000ms
+  timelimiter:
+    instances:
+      deptCircuitBreaker:
+        timeout-duration: 5s

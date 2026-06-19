@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true) // 🌟 全局宣告唯讀事務，最佳化資料庫連線效能，並防止意外的寫入操作
 public class DepartmentQueryService {
 
-	private final DepartmentTreeReaderPort departmentQueryPort;
+	private final DepartmentTreeReaderPort treeReader;
 
 	// =========================================================
 	// 1. 取得樹狀結構
@@ -59,7 +59,7 @@ public class DepartmentQueryService {
 
 		// 1. 透過 Port 取得單次 SQL 查詢打平後的節點清單 (已利用 Closure Table 將時間複雜度降為 O(1) DB
 		// Round-trip)
-		List<DepartmentNode> flatNodes = departmentQueryPort.getSubtree(tenantId, rootId, includeDisabled);
+		List<DepartmentNode> flatNodes = treeReader.getSubtree(tenantId, rootId, includeDisabled);
 
 		if (flatNodes.isEmpty()) {
 			throw new IllegalArgumentException("Department subtree not found for rootId: " + rootId);
@@ -84,17 +84,17 @@ public class DepartmentQueryService {
 	public DepartmentHierarchyGottenResult getDepartmentHierarchy(String tenantId, String departmentId) {
 
 		// 1. 查出當前部門節點的基礎資訊
-		DepartmentNode currentNode = departmentQueryPort.findById(tenantId, departmentId)
+		DepartmentNode currentNode = treeReader.findById(tenantId, departmentId)
 				.orElseThrow(() -> new IllegalArgumentException("Target department not found: " + departmentId));
 
 		// 2. 🌟 頂級優化：利用閉包表單次 SQL 撈出該部門轄下的「整批子孫節點」
 		// 這裡 includeDisabled 傳入 true，確保即使子樹包含 DISABLED 節點也能完整還原幾何拓撲
-		List<DepartmentNode> descendantNodes = departmentQueryPort.getSubtree(tenantId, departmentId, true);
+		List<DepartmentNode> descendantNodes = treeReader.getSubtree(tenantId, departmentId, true);
 
 		// 3. 獲取上級部門資訊 (父節點脈絡)
 		DepartmentNode parentNode = null;
 		if (currentNode.parentId() != null) {
-			parentNode = departmentQueryPort.findById(tenantId, currentNode.parentId()).orElse(null);
+			parentNode = treeReader.findById(tenantId, currentNode.parentId()).orElse(null);
 		}
 
 		// =========================================================
@@ -108,7 +108,7 @@ public class DepartmentQueryService {
 		descendantNodes.forEach(d -> allTargetDeptIds.add(d.id()));
 
 		// 直擊 department_employees_view 複合索引，一次拉回整張對應表
-		Map<String, List<String>> staffMapping = departmentQueryPort.findEmployeeMappings(tenantId, allTargetDeptIds);
+		Map<String, List<String>> staffMapping = treeReader.findEmployeeMappings(tenantId, allTargetDeptIds);
 
 		// =========================================================
 		// 5. 函數式構建與記憶體關係重組 (Adjacency List 分組)
@@ -182,7 +182,7 @@ public class DepartmentQueryService {
 	 * @return 扁平化的節點視圖列表，依階層由高至低排列
 	 */
 	public List<DepartmentFlatNodeGottenView> getBreadcrumbPath(String tenantId, String departmentId) {
-		List<DepartmentNode> nodes = departmentQueryPort.getBreadcrumbPath(tenantId, departmentId);
+		List<DepartmentNode> nodes = treeReader.getBreadcrumbPath(tenantId, departmentId);
 
 		return nodes.stream().map(this::toFlatView).toList();
 	}
@@ -206,7 +206,7 @@ public class DepartmentQueryService {
 			return List.of();
 		}
 
-		List<DepartmentNode> nodes = departmentQueryPort.searchDepartments(tenantId, keyword.trim());
+		List<DepartmentNode> nodes = treeReader.searchDepartments(tenantId, keyword.trim());
 
 		return nodes.stream().map(this::toFlatView).toList();
 	}

@@ -304,7 +304,7 @@ public class DepartmentCommandController {
 	 * 執行跨聚合部門合併重組 (Merge Department Process)
 	 *
 	 * <pre>
-	 * 💡 <b>CQRS Command Endpoint (寫入端操作入口)：</b>
+	 * <b>CQRS Command Endpoint (寫入端操作入口)：</b>
 	 * 觸發組織架構的重量級重組流程。將來源部門 (Source) 的所有直屬人員編制與子部門拓撲，
 	 * 完整過繼並轉移至目標部門 (Target)，並將來源部門的業務生命週期標記為停用 (已合併)。
 	 * 此 API 保證操作的絕對原子性 (Atomicity)。
