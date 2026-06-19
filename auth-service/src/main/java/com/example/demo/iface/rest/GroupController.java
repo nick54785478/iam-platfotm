@@ -1,21 +1,15 @@
 package com.example.demo.iface.rest;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.application.service.GroupCommandService;
 import com.example.demo.application.service.GroupQueryService;
 import com.example.demo.application.shared.dto.GroupRepresentation;
+import com.example.demo.iface.dto.req.GroupRequest;
+import com.example.demo.iface.dto.res.GroupResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <h2>[基礎設施層 - Web 適配器] 使用者群組傳輸控制層 (Group Controller)</h2>
@@ -38,6 +32,7 @@ public class GroupController {
 
 	private final GroupCommandService groupCommandService;
 	private final GroupQueryService groupQueryService;
+	private GroupRepresentation groupRepresentation;
 
 	public GroupController(GroupCommandService groupCommandService, GroupQueryService groupQueryService) {
 		this.groupCommandService = groupCommandService;
@@ -55,9 +50,9 @@ public class GroupController {
 	 * </p>
 	 */
 	@PostMapping
-	public ResponseEntity<Void> createGroup(@RequestBody CreateGroupRequest request) {
+	public ResponseEntity<GroupResponse.GroupCreatedResource> createGroup(@RequestBody GroupRequest.CreateGroupResource request) {
 		groupCommandService.createGroup(request.groupName(), request.groupCode());
-		return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
+		return new ResponseEntity<>(new GroupResponse.GroupCreatedResource("200","群組新增成功"), HttpStatus.CREATED); // 201 Created
 	}
 
 	/**
@@ -69,14 +64,14 @@ public class GroupController {
 	 * @param groupCode 業務不可變唯一代碼
 	 */
 	@PutMapping("/{groupCode}/name")
-	public ResponseEntity<Void> renameGroup(@PathVariable String groupCode, @RequestBody RenameGroupRequest request) {
+	public ResponseEntity<GroupResponse.GroupRenamedResource> renameGroup(@PathVariable String groupCode, @RequestBody GroupRequest.RenameGroupResource resource) {
 
-		groupCommandService.renameGroup(groupCode, request.newName());
-		return ResponseEntity.noContent().build(); // 204 No Content
+		groupCommandService.renameGroup(groupCode, resource.newName());
+		return new ResponseEntity<>(new GroupResponse.GroupRenamedResource("200","群組更名成功"), HttpStatus.OK); // 204 No Content
 	}
 
 	/**
-	 * <b>🚀 將指定使用者加入特定群組 (Add Group Member)</b>
+	 * <b>將指定使用者加入特定群組 (Add Group Member)</b>
 	 * <p>
 	 * <b>HTTP 語意：</b> {@code POST /api/groups/{groupCode}/members/{username}}
 	 * </p>
@@ -85,11 +80,11 @@ public class GroupController {
 	 * </p>
 	 */
 	@PostMapping("/{groupCode}/members/{username}")
-	public ResponseEntity<Void> addMemberToGroup(@PathVariable String groupCode, @PathVariable String username) {
+	public ResponseEntity<GroupResponse.GroupMemberAddedResource> addMemberToGroup(@PathVariable String groupCode, @PathVariable String username) {
 
 		// 驅動應用層進行跨聚合元數據轉譯綁定
 		groupCommandService.addMemberToGroup(groupCode, username);
-		return ResponseEntity.ok().build(); // 200 OK
+		return new ResponseEntity<>(new GroupResponse.GroupMemberAddedResource("200", "加入成功"), HttpStatus.OK); // 200 OK
 	}
 
 	/**
@@ -99,14 +94,14 @@ public class GroupController {
 	 * </p>
 	 */
 	@DeleteMapping("/{groupCode}/members/{username}")
-	public ResponseEntity<Void> removeMemberFromGroup(@PathVariable String groupCode, @PathVariable String username) {
+	public ResponseEntity<GroupResponse.GroupMemberRemovedResource> removeMemberFromGroup(@PathVariable String groupCode, @PathVariable String username) {
 
 		groupCommandService.removeMemberFromGroup(groupCode, username);
-		return ResponseEntity.noContent().build(); // 204 No Content
+		return new ResponseEntity<>(new GroupResponse.GroupMemberRemovedResource("200", "移出成功"), HttpStatus.OK); // 204 No Content
 	}
 
 	/**
-	 * <b>🚀 將特定角色批量賦予群組 (Assign Role to Group)</b>
+	 * <b>將特定角色批量賦予群組 (Assign Role to Group)</b>
 	 * <p>
 	 * <b>HTTP 語意：</b> {@code POST /api/groups/{groupCode}/roles/{roleCode}}
 	 * </p>
@@ -115,23 +110,25 @@ public class GroupController {
 	 * </p>
 	 */
 	@PostMapping("/{groupCode}/roles/{roleCode}")
-	public ResponseEntity<Void> assignRoleToGroup(@PathVariable String groupCode, @PathVariable String roleCode) {
+	public ResponseEntity<GroupResponse.GroupRoleAssignedResource> assignRoleToGroup(@PathVariable String groupCode, @PathVariable String roleCode) {
 
 		groupCommandService.assignRoleToGroup(groupCode, roleCode);
-		return ResponseEntity.ok().build(); // 200 OK
+		return new ResponseEntity<>(new GroupResponse.GroupRoleAssignedResource("200",
+				String.format("群組角色 %s %s 建立成功", groupCode,roleCode)), HttpStatus.OK); // 200 OK
 	}
 
 	/**
-	 * <b>🚀 撤銷該群組綁定的特定角色 (Revoke Role from Group)</b>
+	 * <b>撤銷該群組綁定的特定角色 (Revoke Role from Group)</b>
 	 * <p>
 	 * <b>HTTP 語意：</b> {@code DELETE /api/groups/{groupCode}/roles/{roleCode}}
 	 * </p>
 	 */
 	@DeleteMapping("/{groupCode}/roles/{roleCode}")
-	public ResponseEntity<Void> revokeRoleFromGroup(@PathVariable String groupCode, @PathVariable String roleCode) {
+	public ResponseEntity<GroupResponse.GroupRoleRevokedResource> revokeRoleFromGroup(@PathVariable String groupCode, @PathVariable String roleCode) {
 
 		groupCommandService.revokeRoleFromGroup(groupCode, roleCode);
-		return ResponseEntity.noContent().build(); // 204 No Content
+		return new ResponseEntity<>(new GroupResponse.GroupRoleRevokedResource("200",
+				String.format("群組角色 %s %s 撤銷成功", groupCode,roleCode)), HttpStatus.OK); // 200 OK
 	}
 
 	/**
@@ -141,9 +138,10 @@ public class GroupController {
 	 * </p>
 	 */
 	@GetMapping("/{groupCode}")
-	public ResponseEntity<GroupRepresentation> getGroupByCode(@PathVariable String groupCode) {
+	public ResponseEntity<GroupResponse.GroupViewGottenResource> getGroupByCode(@PathVariable String groupCode) {
 		// 一發複合索引直擊去正規化的 group_view 投影表，效能最優化
-		return ResponseEntity.ok(groupQueryService.getGroupByCode(groupCode));
+		GroupRepresentation groupRepresentation = groupQueryService.getGroupByCode(groupCode);
+		return ResponseEntity.ok(new GroupResponse.GroupViewGottenResource("200", "Success", groupRepresentation));
 	}
 
 	/**
@@ -153,17 +151,10 @@ public class GroupController {
 	 * </p>
 	 */
 	@GetMapping
-	public ResponseEntity<List<GroupRepresentation>> getAllGroups() {
-		return ResponseEntity.ok(groupQueryService.getAllGroupsOfCurrentTenant());
+	public ResponseEntity<GroupResponse.GroupsViewGottenResource> getAllGroups() {
+		List<GroupRepresentation> groupRepresentations = groupQueryService.getAllGroupsOfCurrentTenant();
+		return ResponseEntity.ok(new GroupResponse.GroupsViewGottenResource("200", "Success", groupRepresentations));
+
 	}
 }
 
-// ── 💡 Web 層專用不可變前端 Record DTOs ──
-
-/** 群組建立請求結構體 */
-record CreateGroupRequest(String groupName, String groupCode) {
-}
-
-/** 群組更名請求結構體 */
-record RenameGroupRequest(String newName) {
-}
