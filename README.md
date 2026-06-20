@@ -132,3 +132,99 @@
 * Read-Model Segregation (讀寫模型絕對隔離)：任何帶有 _view 或讀取專用的查詢實體與 SQL，絕對禁止注入到寫入端 (Domain 或是 Application 的 Command Service) 中。
 
 * Outbox Pattern 鎖定機制：利用資料庫原生原子更新實作 distributed_locks，確保多實體橫向擴展部署時，同一個時間片段內絕對只會由一台機器的單一線程爭搶執行 Outbox 輪詢，杜絕併發重複發送。
+
+## 架構平台拓撲圖 (架構藍圖)
+
+    flowchart TB
+        %% ==========================================
+        %% Client & Gateway Layer
+        %% ==========================================
+        Client([外部客戶端 Client (Web / Mobile)])
+        
+        subgraph GatewayLayer ["API 網關層 (Gateway Layer)"]
+            Gateway["Spring Cloud Gateway\n(無狀態 / 異步轉發 / 驗證 JWT)"]
+            Redis[(Redis 7.0)\n(限流 Token Bucket / Session 暫存)]
+            Gateway -.-> |Rate Limiting| Redis
+        end
+        
+        Client == "HTTPS / REST" ==> Gateway
+    
+        %% ==========================================
+        %% Core Domain Services Layer
+        %% ==========================================
+        subgraph Microservices ["核心微服務群 (Domain Services)"]
+            
+            %% --- 1. Tenant Service (Future Core) ---
+            subgraph TS ["TenantService (未來的平台樞紐)"]
+                TS_App["Tenant Command Service\n(SaaS 租戶入駐 / 計費 / 停權)"]
+                TS_DB[(PostgreSQL\ntenant_db)]
+                TS_App --> |"Local TX"| TS_DB
+                TS_Outbox{"Outbox 輪詢"}
+                TS_DB -.-> TS_Outbox
+            end
+    
+            %% --- 2. DeptTree Service (Command/Write Side) ---
+            subgraph DS ["DeptTreeService (組織與權限大腦)"]
+                DS_App["Department Command Service\n(聚合根 / 狀態流轉 / 拓撲檢查)"]
+                DS_DB[(PostgreSQL\ndept_db)]
+                
+                subgraph DS_Schema ["dept_db Schema"]
+                    DS_Agg["departments (Aggregate)"]
+                    DS_CT["department_tree (Closure Table)"]
+                    DS_OB["outbox_events"]
+                    DS_Lock["distributed_locks"]
+                end
+                
+                DS_App --> |"Local TX"| DS_Schema
+                DS_Outbox{"Outbox 輪詢\n(搶奪 distributed_locks)"}
+                DS_OB -.-> DS_Outbox
+            end
+    
+            %% --- 3. Auth Service (Read/Query Side + Identity) ---
+            subgraph AS ["AuthService (認證與讀取視圖)"]
+                AS_Query["Auth Query Service\n(JWT 簽發 / 登入驗證 / 權限檢索)"]
+                AS_DB[(PostgreSQL\nauth_db)]
+                AS_Proj["PermissionEventHandler\n(CQRS 充血投影器 + 邏輯時鐘防禦)"]
+                
+                subgraph AS_Schema ["auth_db Schema"]
+                    AS_User["users / roles"]
+                    AS_View["auth_permissions_dict\n(Rich Projection View)"]
+                end
+                
+                AS_Proj --> |"Upsert (Version Check)"| AS_View
+                AS_Query --> |"O(1) 快查"| AS_Schema
+            end
+        end
+    
+        Gateway == "Context Propagation\n(X-Tenant-Id)" ==> TS_App
+        Gateway == "Context Propagation\n(X-Tenant-Id)" ==> DS_App
+        Gateway == "Context Propagation\n(X-Tenant-Id)" ==> AS_Query
+    
+        %% ==========================================
+        %% Event Bus Layer (EDA)
+        %% ==========================================
+        subgraph EventBus ["事件總線層 (Event-Driven Architecture)"]
+            Kafka{{"Kafka 3.6 (KRaft 模式)\n(iam-kafka)"}}
+        end
+    
+        %% Event Publishing
+        TS_Outbox == "發布 TenantProvisionedEvent" ==> Kafka
+        DS_Outbox == "發布 DeptMergedEvent / PermissionCreatedEvent" ==> Kafka
+    
+        %% Event Consuming
+        Kafka -.-> |"訂閱 TenantProvisionedEvent\n(初始化 Root Admin)"| AS_Proj
+        Kafka -.-> |"訂閱 PermissionCreatedEvent\n(投影至 View 表)"| AS_Proj
+        Kafka -.-> |"訂閱 TenantProvisionedEvent\n(初始化預設總部節點)"| DS_App
+    
+        %% Styling
+        classDef client fill:#f9f,stroke:#333,stroke-width:2px;
+        classDef gateway fill:#ff9,stroke:#333,stroke-width:2px;
+        classDef service fill:#ccf,stroke:#333,stroke-width:2px;
+        classDef db fill:#fcf,stroke:#333,stroke-width:2px;
+        classDef kafka fill:#ffc,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5;
+        
+        class Client client;
+        class GatewayLayer gateway;
+        class TS,DS,AS service;
+        class TS_DB,DS_DB,AS_DB db;
+        class EventBus kafka;
