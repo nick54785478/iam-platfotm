@@ -37,8 +37,9 @@ public interface DistributedLockPersistence extends JpaRepository<DistributedLoc
 	@Modifying
 	@Transactional
 	@Query(value = """
-			INSERT IGNORE INTO distributed_locks (lock_key)
-			VALUES (:lockKey)
+			INSERT INTO distributed_locks (lock_key)
+			                 VALUES (:lockKey)
+			                 ON CONFLICT (lock_key) DO NOTHING;
 			""", nativeQuery = true)
 	void ensureLockExists(@Param("lockKey") String lockKey);
 

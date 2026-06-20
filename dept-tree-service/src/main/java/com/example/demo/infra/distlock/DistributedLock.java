@@ -1,7 +1,5 @@
 package com.example.demo.infra.distlock;
 
-import java.time.Instant;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,6 +7,8 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
 
 /**
  * DistributedLock (基礎設施層 - 關係型資料庫分散式鎖實體)
@@ -32,7 +32,11 @@ public class DistributedLock {
 	 * 鎖的唯一業務用途識別 Key (例如: "job:outbox-polling-lock")
 	 */
 	@Id
-	@Column(name = "lock_key", length = 64)
+	@Column(name = "lock_key", length = 64,
+			unique = true,       // 顯式宣告唯一約束，完美對接 PostgreSQL 的 ON CONFLICT
+			nullable = false,    // 鎖的 Key 絕對不能為空
+			updatable = false    // 鎖的 Key 一旦建立就具有物理不變性，禁止被 JPA Update 語句覆蓋
+	)
 	private String lockKey;
 
 	/**
