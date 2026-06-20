@@ -78,8 +78,48 @@
 
 ## 系統目錄結構 (Hexagonal Architecture View)
 
-系統嚴格遵守六角架構（Ports and Adapters），以下為標準模組化結構範例：
+各系統嚴格遵守六角架構（Ports and Adapters），以下為標準模組化結構範例：
 
+  src/main/java/com/example/
+  ├── application/             # Application Layer (Hexagon Inside)
+  │   ├── service/             # Process Managers & Orchestrators (跨聚合協調)
+  │   ├── port/                # Ports (Inbound & Outbound Interfaces)
+  │   ├── domain/              # Domain Layer (Hexagon Center)
+  │   │   ├── aggregate        # Aggregate (內含 Aggregate Root & 相關 VO)
+  │   │   ├── event/           # Domain Events
+  │   │   ├── exception/       # Domain Exceptions
+  │   │   ├── repository/      # Domain Repository Interfaces
+  │   │   └── vo/              # Value Objects (TenantId, DepartmentId)
+  │   └── shared/              # Shared Kernels (Commands, DTOs, Views)
+  ├── infrastructure/          # Infrastructure Layer (Hexagon Outside)
+  │   ├── adapter/             # Implementations of Ports
+  │   ├── projection/          # Query Side Projection Logic
+  │   ├── ...
+  │   └── persistence/         # Repositories
+  └── iface/                   # Presentation / Interface Layer
+      ├── dto/                 # Request/Response Objects
+      ├── rest/                # RESTful Command/Query Endpoints
+      ├── schedule/            # Schedule Jobs (Outbox Polling)
+      ├── exception/           # Global Exception Handlers
+      └── event/               # Event Listeners/Handlers
+
+
+
+
+**AuthService**
+採用 **Strict Clean Architecture**
+在此架構下，實作最嚴格的 Clean Architecture 中，領域層必須是 100% 的純 Java (POJO)，絕對不能出現任何技術類的物件，如: jakarta.persistence.* (JPA) 或 Spring 的依賴。
+
+
+
+**DeptTreeService**
+採用實用主義的充血模型 (Pragmatic DDD)，允許領域實體 (Domain Entity) 掛上基礎設施 (JPA) 的標註，以此換取開發的高效能。
+
+也就是把 @Entity、@Table 直接寫在領域模型上。但為了堅守 DDD 的底線，我們透過強大的「防禦性編程」來彌補：
+>* 封鎖預設建構子：@NoArgsConstructor(access = AccessLevel.PROTECTED)，只留給 Hibernate 反射用，業務層無法調用。
+>* 拔除所有的 Setter：強制使用有業務意義的方法（如 updateDetails()）來改變狀態。
+>* 保護聚合根邊界：保證物件的狀態一致性。
+業界在實戰 Spring Boot 時，90% 的團隊最終會選擇這條路
 
 
 
