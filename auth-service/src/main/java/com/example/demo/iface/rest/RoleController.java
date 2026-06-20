@@ -1,20 +1,15 @@
 package com.example.demo.iface.rest;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.application.service.RoleCommandService;
 import com.example.demo.application.service.RoleQueryService;
 import com.example.demo.application.shared.dto.RoleRepresentation;
+import com.example.demo.iface.dto.req.RoleRequest;
+import com.example.demo.iface.dto.res.RoleResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <h2>[基礎設施層 - Web 適配器] 角色與權限控制層 (Role Controller)</h2>
@@ -30,6 +25,8 @@ public class RoleController {
 
 	private final RoleCommandService roleCommandService;
 	private final RoleQueryService roleQueryService;
+	private RoleRepresentation data;
+	private List<RoleRepresentation> data1;
 
 	public RoleController(RoleCommandService roleCommandService, RoleQueryService roleQueryService) {
 		this.roleCommandService = roleCommandService;
@@ -47,9 +44,9 @@ public class RoleController {
 	 * </p>
 	 */
 	@PostMapping
-	public ResponseEntity<Void> createRole(@RequestBody CreateRoleRequest request) {
-		roleCommandService.createRole(request.roleName(), request.roleCode());
-		return ResponseEntity.status(HttpStatus.CREATED).build(); // 201 Created
+	public ResponseEntity<RoleResponse.RoleCreatedResource> createRole(@RequestBody RoleRequest.CreateRoleRequest resource) {
+		roleCommandService.createRole(resource.roleName(), resource.roleCode());
+		return new ResponseEntity<>(new RoleResponse.RoleCreatedResource("200", String.format("%s 角色建立成功", resource.roleName()) ), HttpStatus.CREATED); // 201 Created
 	}
 
 	/**
@@ -62,10 +59,10 @@ public class RoleController {
 	 * </p>
 	 */
 	@PutMapping("/{roleCode}/name")
-	public ResponseEntity<Void> renameRole(@PathVariable String roleCode, @RequestBody RenameRoleRequest request) {
+	public ResponseEntity<RoleResponse.RoleRenamedResource> renameRole(@PathVariable String roleCode, @RequestBody RoleRequest.RenameRoleRequest resource) {
 
-		roleCommandService.renameRole(roleCode, request.newName());
-		return ResponseEntity.noContent().build(); // 204 No Content
+		roleCommandService.renameRole(roleCode, resource.newName());
+		return new ResponseEntity<>(new RoleResponse.RoleRenamedResource("200", String.format("%s 角色建立成功", resource.newName()) ), HttpStatus.CREATED); // 201 Created
 	}
 
 	/**
@@ -78,16 +75,15 @@ public class RoleController {
 	 * </p>
 	 */
 	@PostMapping("/{roleCode}/permissions")
-	public ResponseEntity<Void> assignPermission(@PathVariable String roleCode,
-			@RequestBody AssignPermissionRequest request) {
-
+	public ResponseEntity<RoleResponse.PermissionAssignedResource> assignPermission(@PathVariable String roleCode,
+																					@RequestBody RoleRequest.AssignPermissionRequest request) {
 		roleCommandService.reportPermission(roleCode, request.systemCode(), request.permissionCode(),
 				request.permissionName());
-		return ResponseEntity.ok().build(); // 200 OK
+		return new ResponseEntity<>(new RoleResponse.PermissionAssignedResource("200", "Success"), HttpStatus.OK); // 200 OK
 	}
 
 	// ==========================================
-	// ── 🚀 讀取側接口 (Query Side - 扁平視圖) ──
+	// ── 讀取側接口 (Query Side - 扁平視圖) ──
 	// ==========================================
 
 	/**
@@ -100,8 +96,9 @@ public class RoleController {
 	 * </p>
 	 */
 	@GetMapping("/{roleCode}")
-	public ResponseEntity<RoleRepresentation> getRoleByCode(@PathVariable String roleCode) {
-		return ResponseEntity.ok(roleQueryService.getRoleByCode(roleCode));
+	public ResponseEntity<RoleResponse.RoleViewGottenResource> getRoleByCode(@PathVariable String roleCode) {
+		RoleRepresentation data = roleQueryService.getRoleByCode(roleCode);
+		return ResponseEntity.ok(new RoleResponse.RoleViewGottenResource("200", "Success", data));
 	}
 
 	/**
@@ -111,21 +108,14 @@ public class RoleController {
 	 * </p>
 	 */
 	@GetMapping
-	public ResponseEntity<List<RoleRepresentation>> getAllRoles() {
-		return ResponseEntity.ok(roleQueryService.getAllRolesOfCurrentTenant());
+	public ResponseEntity<RoleResponse.RolesViewGottenResource> getAllRoles() {
+		List<RoleRepresentation> data = roleQueryService.getAllRolesOfCurrentTenant();
+		return ResponseEntity.ok(new RoleResponse.RolesViewGottenResource("200", "Success", data));
 	}
 }
 
-// ── 💡 Web 層專用原生不可變前端 Record DTOs ──
 
-/** 角色建立請求結構體 */
-record CreateRoleRequest(String roleName, String roleCode) {
-}
 
-/** 角色更名請求結構體 */
-record RenameRoleRequest(String newName) {
-}
 
-/** 跨服務權限上報請求結構體 */
-record AssignPermissionRequest(String systemCode, String permissionCode, String permissionName) {
-}
+
+

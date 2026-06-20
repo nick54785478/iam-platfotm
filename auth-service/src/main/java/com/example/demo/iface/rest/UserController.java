@@ -1,22 +1,17 @@
 package com.example.demo.iface.rest;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.application.service.UserCommandService;
 import com.example.demo.application.service.UserQueryService;
 import com.example.demo.application.shared.command.CreateUserCommand;
 import com.example.demo.application.shared.dto.UserRepresentation;
+import com.example.demo.iface.dto.req.UserRequest;
+import com.example.demo.iface.dto.res.RoleResponse;
+import com.example.demo.iface.dto.res.UserResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <h2>[基礎設施層 - Web 適配器] 使用者傳輸控制層 (User Controller)</h2>
@@ -38,149 +33,131 @@ import com.example.demo.application.shared.dto.UserRepresentation;
 @RequestMapping("/api/users")
 public class UserController {
 
-	private final UserCommandService userCommandService;
-	private final UserQueryService userQueryService;
+    private final UserCommandService userCommandService;
+    private final UserQueryService userQueryService;
 
-	public UserController(UserCommandService userCommandService, UserQueryService userQueryService) {
-		this.userCommandService = userCommandService;
-		this.userQueryService = userQueryService;
-	}
+    public UserController(UserCommandService userCommandService, UserQueryService userQueryService) {
+        this.userCommandService = userCommandService;
+        this.userQueryService = userQueryService;
+    }
 
-	// ==========================================
-	// ── 寫入側接口 (Command Side - 變更狀態) ──
-	// ==========================================
+    // ==========================================
+    // ── 寫入側接口 (Command Side - 變更狀態) ──
+    // ==========================================
 
-	/**
-	 * <b>建立全新使用者 (Create User)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code POST /api/users}
-	 * </p>
-	 * 
-	 * @param request 包含用戶註冊基本資訊的 JSON 載荷
-	 * @return 201 Created 狀態碼，並於 Body 回傳該用戶唯一的業務主鍵 {@code username}
-	 */
-	@PostMapping
-	public ResponseEntity<String> createUser(@RequestBody CreateUserRequest request) {
-		CreateUserCommand command = new CreateUserCommand(request.username(), request.password(), request.email());
-		// 驅動應用層編排流程
-		String username = userCommandService.createUser(command);
-		return ResponseEntity.status(HttpStatus.CREATED).body(username);
-	}
+    /**
+     * <b>建立全新使用者 (Create User)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code POST /api/users}
+     * </p>
+     *
+     * @param resource 包含用戶註冊基本資訊的 JSON 載荷
+     * @return 201 Created 狀態碼，並於 Body 回傳該用戶唯一的業務主鍵 {@code username}
+     */
+    @PostMapping
+    public ResponseEntity<UserResponse.UserCreatedResource> createUser(@RequestBody UserRequest.CreateUserResource resource) {
+        CreateUserCommand command = new CreateUserCommand(resource.username(), resource.password(), resource.email());
+        // 驅動應用層編排流程
+        String username = userCommandService.createUser(command);
+        return new ResponseEntity<>(new UserResponse.UserCreatedResource("200", String.format("使用者 %s 建立成功", resource.email())), HttpStatus.CREATED);
+    }
 
-	/**
-	 * <b>修改使用者密碼 (Change Password)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code PUT /api/users/{username}/password}
-	 * </p>
-	 * 
-	 * @param username 業務不可變主鍵
-	 */
-	@PutMapping("/{username}/password")
-	public ResponseEntity<Void> changePassword(@PathVariable String username,
-			@RequestBody ChangePasswordRequest request) {
+    /**
+     * <b>修改使用者密碼 (Change Password)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code PUT /api/users/{username}/password}
+     * </p>
+     *
+     * @param username 業務不可變主鍵
+     */
+    @PutMapping("/{username}/password")
+    public ResponseEntity<UserResponse.PasswordChangedResource> changePassword(@PathVariable String username,
+                                                                               @RequestBody UserRequest.ChangePasswordRequest resource) {
+        userCommandService.changePassword(username, resource.newPassword());
+        return new ResponseEntity<>(new UserResponse.PasswordChangedResource("200", "Success"), HttpStatus.OK); // 204 No Content 代表狀態變更成功且無多餘回傳
+    }
 
-		userCommandService.changePassword(username, request.newPassword());
-		return ResponseEntity.noContent().build(); // 204 No Content 代表狀態變更成功且無多餘回傳
-	}
+    /**
+     * <b>變更使用者基本個人資料 (Update Profile)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code PUT /api/users/{username}/profile}
+     * </p>
+     * <p>
+     * 守護業務規則：遵循新規範，username 落地後終生不可變，本接口僅支持更新 Email。
+     * </p>
+     */
+    @PutMapping("/{username}/profile")
+    public ResponseEntity<UserResponse.UserProfileUpdatedResource> updateUserProfile(@PathVariable String username,
+                                                                                     @RequestBody UserRequest.UpdateUserProfileRequest resource) {
+        userCommandService.updateUserProfile(username, resource.email());
+        return new ResponseEntity<>(new UserResponse.UserProfileUpdatedResource("200", "Success"), HttpStatus.OK);
+    }
 
-	/**
-	 * <b>變更使用者基本個人資料 (Update Profile)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code PUT /api/users/{username}/profile}
-	 * </p>
-	 * <p>
-	 * 守護業務規則：遵循新規範，username 落地後終生不可變，本接口僅支持更新 Email。
-	 * </p>
-	 */
-	@PutMapping("/{username}/profile")
-	public ResponseEntity<Void> updateUserProfile(@PathVariable String username,
-			@RequestBody UpdateUserProfileRequest request) {
+    /**
+     * <b>停用/軟刪除使用者 (Deactivate User)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code DELETE /api/users/{username}}
+     * </p>
+     * <p>
+     * 將使用者狀態打上 DEACTIVATED，不執行物理刪除，保留歷史審計血統。
+     * </p>
+     */
+    @DeleteMapping("/{username}")
+    public ResponseEntity<UserResponse.UserDeletedResource> deleteUser(@PathVariable String username) {
+        userCommandService.deactivateUser(username);
+        return new ResponseEntity<>(new UserResponse.UserDeletedResource("200", "Success"), HttpStatus.OK);
+    }
 
-		userCommandService.updateUserProfile(username, request.email());
-		return ResponseEntity.noContent().build();
-	}
+    /**
+     * <b>將特定角色賦予指定使用者 (Assign Role to User)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code POST /api/users/{username}/roles/{roleCode}}
+     * </p>
+     * <p>
+     * <b>設計美感：</b> 路由完全以業務雙主角當家（例：/api/users/alex/roles/ADMIN），網址自帶完美語意，無需額外
+     * Request Body。
+     * </p>
+     */
+    @PostMapping("/{username}/roles/{roleCode}")
+    public ResponseEntity<RoleResponse.UserRoleAssignedResource> assignRoleToUser(@PathVariable String username, @PathVariable String roleCode) {
 
-	/**
-	 * <b>停用/軟刪除使用者 (Deactivate User)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code DELETE /api/users/{username}}
-	 * </p>
-	 * <p>
-	 * 將使用者狀態打上 DEACTIVATED，不執行物理刪除，保留歷史審計血統。
-	 * </p>
-	 */
-	@DeleteMapping("/{username}")
-	public ResponseEntity<Void> deleteUser(@PathVariable String username) {
-		userCommandService.deactivateUser(username);
-		return ResponseEntity.noContent().build();
-	}
+        // 驅動核心編排：物理綁定關係 ➡️ 觸發 Outbox 落地 ➡️ 非同步刷新 UserView 快照表的角色欄位
+        userCommandService.assignRoleToUser(username, roleCode);
+        return new ResponseEntity<>(new RoleResponse.UserRoleAssignedResource("200", "Success"), HttpStatus.OK); // 200 OK
+    }
 
-	/**
-	 * <b>🚀 將特定角色賦予指定使用者 (Assign Role to User)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code POST /api/users/{username}/roles/{roleCode}}
-	 * </p>
-	 * <p>
-	 * <b>設計美感：</b> 路由完全以業務雙主角當家（例：/api/users/alex/roles/ADMIN），網址自帶完美語意，無需額外
-	 * Request Body。
-	 * </p>
-	 */
-	@PostMapping("/{username}/roles/{roleCode}")
-	public ResponseEntity<Void> assignRoleToUser(@PathVariable String username, @PathVariable String roleCode) {
+    // ==========================================
+    // ── 讀取側接口 (Query Side - 扁平快照) ──
+    // ==========================================
 
-		// 驅動核心編排：物理綁定關係 ➡️ 觸發 Outbox 落地 ➡️ 非同步刷新 UserView 快照表的角色欄位
-		userCommandService.assignRoleToUser(username, roleCode);
-		return ResponseEntity.ok().build(); // 200 OK
-	}
+    /**
+     * <b>查詢單一使用者詳細資訊與所持角色 (Read Detail)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code GET /api/users/{username}}
+     * </p>
+     * <p>
+     * <b>硬核防禦：</b> 加上 {@code :.+} 正則匹配，確保諸如 {@code V-NICK.GH.ZHANG}
+     * 等帶有點號的用戶名能被完整捕獲，不發生 404 災難。
+     * </p>
+     */
+    @GetMapping("/{username:.+}")
+    public ResponseEntity<UserResponse.UserViewGottenResource> getUser(@PathVariable String username) {
+        UserRepresentation data = userQueryService.getUserByUsername(username);
+        // 直擊去正規化的 user_view 投影表，效能最優化
+        return new ResponseEntity<>(new UserResponse.UserViewGottenResource("200", "Success", data),
+                HttpStatus.OK);
+    }
 
-	// ==========================================
-	// ── 讀取側接口 (Query Side - 扁平快照) ──
-	// ==========================================
-
-	/**
-	 * <b>查詢單一使用者詳細資訊與所持角色 (Read Detail)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code GET /api/users/{username}}
-	 * </p>
-	 * <p>
-	 * 🚀 <b>硬核防禦：</b> 加上 {@code :.+} 正則匹配，確保諸如 {@code V-NICK.GH.ZHANG}
-	 * 等帶有點號的用戶名能被完整捕獲，不發生 404 災難。
-	 * </p>
-	 */
-	@GetMapping("/{username:.+}")
-	public ResponseEntity<UserRepresentation> getUser(@PathVariable String username) {
-		// 直擊去正規化的 user_view 投影表，效能最優化
-		return ResponseEntity.ok(userQueryService.getUserByUsername(username));
-	}
-
-	/**
-	 * <b>查詢當前租戶空間下的全量使用者清單視圖 (Read List)</b>
-	 * <p>
-	 * <b>HTTP 語意：</b> {@code GET /api/users}
-	 * </p>
-	 */
-	@GetMapping
-	public ResponseEntity<List<UserRepresentation>> getAllUsers() {
-		return ResponseEntity.ok(userQueryService.getAllUsersOfCurrentTenant());
-	}
-}
-
-// ── 💡 Web 層專用原生不可變前端 Record DTOs ──
-
-/**
- * 密碼變更請求結構體
- */
-record ChangePasswordRequest(String newPassword) {
-}
-
-/**
- * 用戶基礎資料變更請求結構體
- */
-record UpdateUserProfileRequest(String email) {
-}
-
-/**
- * 用戶建立請求結構體
- */
-record CreateUserRequest(String username, String password, String email) {
+    /**
+     * <b>查詢當前租戶空間下的全量使用者清單視圖 (Read List)</b>
+     * <p>
+     * <b>HTTP 語意：</b> {@code GET /api/users}
+     * </p>
+     */
+    @GetMapping
+    public ResponseEntity<UserResponse.UsersViewGottenResource> getAllUsers() {
+        List<UserRepresentation> data = userQueryService.getAllUsersOfCurrentTenant();
+        return new ResponseEntity<>(new UserResponse.UsersViewGottenResource("200", "Success", data),
+                HttpStatus.OK);
+    }
 }
