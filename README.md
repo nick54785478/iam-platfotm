@@ -85,11 +85,10 @@
     │   ├── service/             # Process Managers & Orchestrators (跨聚合協調)
     │   ├── port/                # Ports (Inbound & Outbound Interfaces)
     │   ├── domain/              # Domain Layer (Hexagon Center)
-    │   │   ├── aggregate        # Aggregate (內含 Aggregate Root & 相關 VO)
+    │   │   ├── aggregate        # Aggregate (內含 Aggregate Root & 相關 Value Objects)
     │   │   ├── event/           # Domain Events
     │   │   ├── exception/       # Domain Exceptions
-    │   │   ├── repository/      # Domain Repository Interfaces
-    │   │   └── vo/              # Value Objects (TenantId, DepartmentId)
+    │   │   └── repository/      # Domain Repository Interfaces 
     │   └── shared/              # Shared Kernels (Commands, DTOs, Views)
     ├── infrastructure/          # Infrastructure Layer (Hexagon Outside)
     │   ├── adapter/             # Implementations of Ports
