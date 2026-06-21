@@ -1,6 +1,6 @@
 package com.example.demo.config;
 
-import com.example.demo.application.port.GatewayRateLimiterPort;
+import com.example.demo.infra.ratelimit.RateLimitFilterFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.function.RouterFunction;
@@ -8,7 +8,6 @@ import org.springframework.web.servlet.function.ServerResponse;
 
 import java.net.URI;
 
-import static com.example.demo.infra.ratelimit.RateLimitFilterFunctions.ipRateLimiter;
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
 import static org.springframework.cloud.gateway.server.mvc.filter.CircuitBreakerFilterFunctions.circuitBreaker;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
@@ -35,20 +34,23 @@ import static org.springframework.web.servlet.function.RequestPredicates.path;
 @Configuration
 public class GatewayRoutesConfiguration {
 
-	private final GatewayRateLimiterPort rateLimiter;
+	// 核心升級：直接注入我們剛寫好的限流工廠 Bean，完美實現 IoC 控制反轉
+	private final RateLimitFilterFactory rateLimitFactory;
 
-	public GatewayRoutesConfiguration(GatewayRateLimiterPort rateLimiter) {
-		this.rateLimiter = rateLimiter;
+	public GatewayRoutesConfiguration(RateLimitFilterFactory rateLimitFactory) {
+		this.rateLimitFactory = rateLimitFactory;
 	}
 
 	@Bean
 	public RouterFunction<ServerResponse> saasGatewayRoutes() {
 
-		// 1. 先定義所有的路由規則
+		// ===================================================================
+		// 1. 公開認證通道 (Auth Service - Public Endpoints)
+		// ===================================================================
 		RouterFunction<ServerResponse> routes = route("auth-public-route")
 				.route(path("/api/auth/**"), http())
 				// [精準狙擊]：針對註冊/登入特別嚴格 (10秒 3次)
-				.filter(ipRateLimiter(rateLimiter, "auth-public", 3, 10))
+				.filter(rateLimitFactory.ipRateLimiter("auth-public", 3, 10))
 				.filter(circuitBreaker("authCircuitBreaker", URI.create("forward:/fallback/auth")))
 				.before(uri("http://localhost:8080"))
 				.build()
@@ -65,7 +67,8 @@ public class GatewayRoutesConfiguration {
 						.route(path("/api/users/**")
 								.or(path("/api/roles/**"))
 								.or(path("/api/groups/**")), http())
-						.filter(ipRateLimiter(rateLimiter, "dept-api", 10, 10))
+						// 💡 已將路由 ID 修正為 "auth-admin"，避免與 Dept 服務共用流量桶
+						.filter(rateLimitFactory.ipRateLimiter("auth-admin", 2, 10))
 						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
 						.filter(circuitBreaker("authCircuitBreaker", URI.create("forward:/fallback/auth")))
 						.before(uri("http://localhost:8080"))
@@ -81,17 +84,18 @@ public class GatewayRoutesConfiguration {
 				 */
 				.and(route("department-service-route")
 						.route(path("/api/departments/**"), http())
-						.filter(ipRateLimiter(rateLimiter, "dept-api", 10, 10))
+						.filter(rateLimitFactory.ipRateLimiter("dept-api", 10, 10))
 						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
 						.filter(circuitBreaker("deptCircuitBreaker", URI.create("forward:/fallback/department")))
 						.before(uri("http://localhost:8081"))
 						.build());
+
 		// ===================================================================
 		// 全局兜底防護網 (Global Filter)
 		// ===================================================================
 		// 將上面組合好的 routes，在最外層再包上一層限流器。
 		// 這代表「所有進來網關的流量」，都會先經過這個每秒 50 次的寬鬆盤查，
 		// 通過後，才會進入內部各自的精準限流與斷路器。
-		return routes.filter(ipRateLimiter(rateLimiter, "global-baseline", 50, 1));
+		return routes.filter(rateLimitFactory.ipRateLimiter("global-baseline", 50, 1));
 	}
 }
