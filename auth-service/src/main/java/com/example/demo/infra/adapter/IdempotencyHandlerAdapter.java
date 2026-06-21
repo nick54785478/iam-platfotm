@@ -1,7 +1,7 @@
 package com.example.demo.infra.adapter;
 
 import com.example.demo.application.port.IdempotencyHandlerPort;
-import com.example.demo.infra.persistence.ProcessedEventPersistence;
+import com.example.demo.infra.idempotency.repository.ProcessedEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 class IdempotencyHandlerAdapter implements IdempotencyHandlerPort {
 
-	private final ProcessedEventPersistence persistence;
+	private final ProcessedEventRepository persistence;
 
 	/**
 	 * 嘗試寫入處理紀錄以霸佔事件的處理權。
