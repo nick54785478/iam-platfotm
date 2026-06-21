@@ -3,6 +3,7 @@ package com.example.demo.application.service;
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.user.aggregate.User;
+import com.example.demo.application.port.PasswordEncoderPort;
 import com.example.demo.application.port.RoleWriterPort;
 import com.example.demo.application.port.UserWriterPort;
 import com.example.demo.infra.context.TenantContext;
@@ -28,7 +29,7 @@ public class TenantOnboardingCommandService {
 
     private final UserWriterPort userWriterPort;
     private final RoleWriterPort roleWriterPort;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoderPort passwordEncoder;
 
     private static final String TENANT_ROOT_ROLE_CODE = "TENANT_ROOT_ADMIN";
     private static final String TENANT_ROOT_ROLE_NAME = "租戶超級管理員";
