@@ -20,7 +20,7 @@ import jakarta.persistence.Version;
  */
 @Entity
 @Table(name = "outbox_events", indexes = {
-		// 🚀 頂規優化：加上專屬表名前綴，完美避開 H2/MySQL 保留字與全局約束命名衝突
+		// 優化：加上專屬表名前綴，完美避開 H2/MySQL 保留字與全局約束命名衝突
 		@Index(name = "idx_outbox_events_status_created", columnList = "status, created_at") })
 public class OutboxEventDbEntity {
 

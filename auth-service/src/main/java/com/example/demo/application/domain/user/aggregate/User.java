@@ -241,6 +241,19 @@ public class User {
 		}
 	}
 
+	/**
+	 * <b>【視圖同步擴充】確認角色綁定，並註冊完全體狀態變更事件</b>
+	 * <p>
+	 * 供應用層 (Command Service) 在完成 roleId 翻譯後調用，確保 CQRS 讀取側
+	 * 能收到帶有明確 roleCodes 的事件，從而正確建立/更新櫥窗視圖。
+	 * </p>
+	 *
+	 * @param roleCodes 人類可讀的角色代碼集合 (由 Port 翻譯而來)
+	 */
+	public void confirmRoleAssignmentsForView(Set<String> roleCodes) {
+		this.registerEvent(this.toChangedEvent(roleCodes));
+	}
+
 	// ── 領域事件管理能力方法 ──
 
 	private void registerEvent(DomainEvent event) {

@@ -16,7 +16,7 @@ import java.util.UUID;
 public record TenantProvisionedEvent(
 
         // -------------------------------------------------------------------
-        // 🛡️ 實作 OutboundEvent 契約的基礎元數據
+        // 實作 OutboundEvent 契約的基礎元數據
         // -------------------------------------------------------------------
         UUID eventId,
         String eventType,
@@ -24,7 +24,7 @@ public record TenantProvisionedEvent(
         Instant occurredAt,
 
         // -------------------------------------------------------------------
-        // 📦 專屬業務負載 (Payload) - 供下游系統初始化的核心參數
+        // 專屬業務負載 (Payload) - 供下游系統初始化的核心參數
         // -------------------------------------------------------------------
         String companyName,
         String rootAdminEmail,
@@ -34,7 +34,7 @@ public record TenantProvisionedEvent(
 ) implements OutboundEvent {
 
     /**
-     * 🏭 靜態工廠方法：提供給 Application Service 快速建構合法的對外事件
+     * 靜態工廠方法：提供給 Application Service 快速建構合法的對外事件
      */
     public static TenantProvisionedEvent create(
             String tenantId,

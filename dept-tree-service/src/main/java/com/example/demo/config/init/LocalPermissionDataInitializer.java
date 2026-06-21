@@ -41,7 +41,7 @@ public class LocalPermissionDataInitializer implements ApplicationRunner {
     private record PermissionSeed(String code, String name, String description, String module) {}
 
     @Override
-    @Transactional // 🌟 極度重要：保證資料庫存檔與 Outbox 事件寫入在同一個 Transaction 內
+    @Transactional // 極度重要：保證資料庫存檔與 Outbox 事件寫入在同一個 Transaction 內
     public void run(ApplicationArguments args) {
         log.info(">>> 啟動 [DeptService] 權限資料初始化檢查...");
 

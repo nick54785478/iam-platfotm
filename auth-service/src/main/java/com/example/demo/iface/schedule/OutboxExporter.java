@@ -31,7 +31,7 @@ import com.example.demo.infra.outbox.repository.OutboxRepository;
 public class OutboxExporter {
 
 	private final OutboxRepository outboxRepository;
-	private final OutboxEventPublisherPort outboxEventPublisherPort; // 🚀 面向規格程式設計，解耦本地記憶體與未來 Kafka
+	private final OutboxEventPublisherPort outboxEventPublisherPort; // 面向規格程式設計，解耦本地記憶體與未來 Kafka
 
 	public OutboxExporter(OutboxRepository outboxRepository,
                           OutboxEventPublisherPort outboxEventPublisherPort) {
