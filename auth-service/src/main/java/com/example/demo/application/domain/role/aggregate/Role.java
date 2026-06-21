@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import com.example.demo.application.domain.role.aggregate.vo.Permission;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.role.event.RoleChangedEvent;
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 /**
  * <h2>[領域層 - 聚合根] 角色充血模型 (Role Aggregate Root)</h2> *

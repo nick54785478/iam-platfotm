@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 /**
  * <h2>[領域層 - 事件] 使用者狀態已完整變更事件 (User Changed Event)</h2>

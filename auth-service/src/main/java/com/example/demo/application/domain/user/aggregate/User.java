@@ -8,7 +8,7 @@ import com.example.demo.application.domain.user.aggregate.vo.UserStatus;
 import com.example.demo.application.domain.user.event.UserChangedEvent;
 import com.example.demo.application.domain.user.event.UserCreatedEvent;
 import com.example.demo.application.domain.user.event.UserPasswordChangedEvent;
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

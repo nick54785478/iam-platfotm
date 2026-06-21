@@ -1,4 +1,4 @@
-package com.example.demo.application.shared.event;
+package com.example.demo.application.domain.shared.event;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

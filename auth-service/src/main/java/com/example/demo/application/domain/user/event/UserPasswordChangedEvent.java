@@ -4,7 +4,7 @@ package com.example.demo.application.domain.user.event;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 
 /**

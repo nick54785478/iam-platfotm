@@ -14,7 +14,7 @@ import com.example.demo.application.domain.group.aggregate.vo.GroupId;
 import com.example.demo.application.domain.group.event.GroupChangedEvent;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.user.aggregate.vo.UserId;
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 /**
  * <h2>[領域層 - 聚合根] 群組充血模型 (Group Aggregate Root)</h2>

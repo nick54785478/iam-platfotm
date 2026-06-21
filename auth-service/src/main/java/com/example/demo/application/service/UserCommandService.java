@@ -13,7 +13,7 @@ import com.example.demo.application.port.PasswordEncoderPort;
 import com.example.demo.application.port.RoleWriterPort;
 import com.example.demo.application.port.UserWriterPort;
 import com.example.demo.application.shared.command.CreateUserCommand;
-import com.example.demo.application.shared.event.TenantEventEnvelope;
+import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
 
 /**

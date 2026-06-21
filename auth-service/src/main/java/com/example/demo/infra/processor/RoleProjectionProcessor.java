@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.demo.application.domain.role.event.RoleChangedEvent;
-import com.example.demo.application.shared.event.TenantEventEnvelope;
+import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.projection.repository.RoleViewRepository;
 import com.example.demo.infra.projection.view.RoleView;
 

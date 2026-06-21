@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PermissionDictViewRepository extends JpaRepository<PermissionDictView, Long> {
+public interface PermissionDictViewRepository extends JpaRepository<PermissionDictView, String> {
 
     Optional<PermissionDictView> findByTenantIdAndCode(String tenantId, String code);
 }

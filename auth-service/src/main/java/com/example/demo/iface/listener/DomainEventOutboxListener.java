@@ -8,8 +8,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.example.demo.application.domain.group.event.GroupChangedEvent;
 import com.example.demo.application.domain.role.event.RoleChangedEvent;
 import com.example.demo.application.domain.user.event.UserChangedEvent;
-import com.example.demo.application.shared.event.DomainEvent;
-import com.example.demo.application.shared.event.TenantEventEnvelope;
+import com.example.demo.application.domain.shared.event.DomainEvent;
+import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.outbox.entity.OutboxEventDbEntity;
 import com.example.demo.infra.outbox.repository.OutboxRepository;
 

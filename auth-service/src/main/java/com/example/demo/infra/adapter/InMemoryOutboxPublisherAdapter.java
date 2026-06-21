@@ -4,8 +4,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.application.port.OutboxEventPublisherPort;
-import com.example.demo.application.shared.event.DomainEvent;
-import com.example.demo.application.shared.event.TenantEventEnvelope;
+import com.example.demo.application.domain.shared.event.DomainEvent;
+import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.outbox.entity.OutboxEventDbEntity;
 
 import tools.jackson.databind.ObjectMapper;

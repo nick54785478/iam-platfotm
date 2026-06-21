@@ -25,7 +25,7 @@ public interface ProcessedEventPersistence extends JpaRepository<ProcessedEvent,
 
 	/**
 	 * 原子性排他性去重寫入 (Atomic Idempotent Insert)。
-	 * * <pre>
+	 * <pre>
 	 * <b>高併發極速防護原理：</b>
 	 * * 捨棄「先 SELECT 判定是否存在、再 INSERT」的兩階段低效做法（該做法在高併發下存在 Check-then-Act 的 Race Condition 漏洞）。
 	 * 直接利用 PostgreSQL Primary Key 的 <b>唯一性約束 (Unique Constraint)</b> 進行單次原子寫入嘗試。

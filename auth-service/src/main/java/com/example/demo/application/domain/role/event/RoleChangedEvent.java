@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
-import com.example.demo.application.shared.event.DomainEvent;
+import com.example.demo.application.domain.shared.event.DomainEvent;
 
 /**
  * <h2>[領域層 - 事件] 角色與權限狀態已變更事件 (Role Changed Event)</h2>
