@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
 	// 多租戶安全查詢：根據租戶 ID 與用戶名查詢（用於登入）
 	Optional<UserEntity> findByTenantIdAndUsername(String tenantId, String username);
+
+	boolean existsByTenantIdAndUsername(String tenantId, String username);
 }

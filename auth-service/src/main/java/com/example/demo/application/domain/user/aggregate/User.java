@@ -1,15 +1,6 @@
 package com.example.demo.application.domain.user.aggregate;
 
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.user.aggregate.vo.AccountInfo;
 import com.example.demo.application.domain.user.aggregate.vo.UserId;
@@ -18,6 +9,15 @@ import com.example.demo.application.domain.user.event.UserChangedEvent;
 import com.example.demo.application.domain.user.event.UserCreatedEvent;
 import com.example.demo.application.domain.user.event.UserPasswordChangedEvent;
 import com.example.demo.application.shared.event.DomainEvent;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * <h2>[領域層 - 聚合根] 使用者充血模型 (User Aggregate Root)</h2> *
@@ -38,25 +38,39 @@ import com.example.demo.application.shared.event.DomainEvent;
  */
 public class User {
 
-	/** 使用者物理主鍵 (UUID 強型態封裝) */
+	/**
+	 * 使用者物理主鍵 (UUID 強型態封裝)
+	 * */
 	private final UserId id;
 
-	/** 使用者賬號與基礎個人資訊值物件 (不可變) */
+	/**
+	 * 使用者賬號與基礎個人資訊值物件 (不可變)
+	 * */
 	private AccountInfo accountInfo;
 
-	/** 賬號當前生命週期狀態 */
+	/**
+	 * 賬號當前生命週期狀態
+	 * */
 	private UserStatus status;
 
-	/** 連續登入失敗計數器 (防禦暴力破解) */
+	/**
+	 * 連續登入失敗計數器 (防禦暴力破解)
+	 * */
 	private int failedLoginAttempts;
 
-	/** 該使用者當前擁有的物理角色識別碼集合 */
+	/**
+	 * 該使用者當前擁有的物理角色識別碼集合
+	 * */
 	private final Set<RoleId> assignedRoles;
 
-	/** 🚀 核心優化：聚合根內部累積的強型態領域事件列表，待外層 Adapter 儲存成功後拔出發射 */
+	/**
+	 *  核心優化：聚合根內部累積的強型態領域事件列表，待外層 Adapter 儲存成功後拔出發射
+	 * */
 	private final List<DomainEvent> domainEvents = new ArrayList<>();
 
-	/** 業務規則：最大連續登入失敗次數，超過即自動鎖定賬號 */
+	/**
+	 * 業務規則：最大連續登入失敗次數，超過即自動鎖定賬號
+	 * */
 	private static final int MAX_FAILED_ATTEMPTS = 5;
 
 	/**
@@ -73,8 +87,9 @@ public class User {
 	}
 
 	/**
-	 * <b>【業務工廠方法】建立全新的合法使用者</b> * @param username 唯一賬號名稱 (不可變)
-	 * 
+	 * <b>【業務工廠方法】建立全新的合法使用者</b>
+	 *
+	 * @param username 唯一賬號名稱 (不可變)
 	 * @param encryptedPassword 已經過基礎設施層雜湊加密後的密碼明文
 	 * @param email             電子郵件信箱
 	 * @return 完全合法的 User 充血實體

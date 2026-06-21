@@ -25,17 +25,11 @@ public interface ProcessedEventPersistence extends JpaRepository<ProcessedEvent,
 
 	/**
 	 * 原子性排他性去重寫入 (Atomic Idempotent Insert)。
-	 * 
-	 * <pre>
-	 * <b>高併發極速防護原理：</b> 
-	 * 
-	 * 捨棄「先 SELECT 判定是否存在、再 INSERT」的兩階段低效做法（該做法在高併發下存在 Check-then-Act 的 Race Condition 漏洞）。 
-	 * 直接利用資料庫 Primary Key 的 <b>唯一性約束 (Unique Constraint)</b> 進行單次原子寫入嘗試。 
-	 * 若事件 ID 已存在，資料庫會直接優雅忽略（IGNORE）該次行為而不回滾或拋出中斷異常，提供極致的一線防護吞吐量。 
-	 * 
-	 * <b>資料庫方言 (Dialect) 注意事項：</b> 
-	 * - 當前寫法為 MySQL / MariaDB 特有語法: {@code INSERT IGNORE INTO ...} 
-	 * - 若未來切換為 PostgreSQL，必須修正為: INSERT INTO ... ON CONFLICT (event_id) DO NOTHING
+	 * * <pre>
+	 * <b>高併發極速防護原理：</b>
+	 * * 捨棄「先 SELECT 判定是否存在、再 INSERT」的兩階段低效做法（該做法在高併發下存在 Check-then-Act 的 Race Condition 漏洞）。
+	 * 直接利用 PostgreSQL Primary Key 的 <b>唯一性約束 (Unique Constraint)</b> 進行單次原子寫入嘗試。
+	 * 若事件 ID 已存在，資料庫會透過 ON CONFLICT 直接優雅忽略該次行為，不回滾也不拋出中斷異常，提供極致的一線防護吞吐量。
 	 * </pre>
 	 *
 	 * @param eventId 領域事件唯一識別碼 (或是附加了 Handler 前綴的複合防護 Key)
@@ -45,8 +39,9 @@ public interface ProcessedEventPersistence extends JpaRepository<ProcessedEvent,
 	@Modifying
 	@Transactional
 	@Query(value = """
-			INSERT IGNORE INTO processed_events (event_id, processed_at)
-			VALUES (:eventId, :now)
-			""", nativeQuery = true)
+          INSERT INTO processed_events (event_id, processed_at)
+          VALUES (:eventId, :now)
+          ON CONFLICT (event_id) DO NOTHING
+          """, nativeQuery = true)
 	int tryInsertEvent(@Param("eventId") String eventId, @Param("now") Instant now);
 }

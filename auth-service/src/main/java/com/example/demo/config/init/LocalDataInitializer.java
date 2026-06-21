@@ -1,17 +1,16 @@
 package com.example.demo.config.init;
 
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.demo.application.service.RoleCommandService;
 import com.example.demo.application.service.UserCommandService;
 import com.example.demo.application.shared.command.CreateUserCommand;
 import com.example.demo.infra.context.TenantContext;
-
+import com.example.demo.infra.persistence.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <h2>[基礎設施層 - 啟動器] 本地測試環境資料初始化引擎 (ApplicationRunner)</h2>
@@ -34,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 // 如果你本地沒設 Profile，可以先暫時保持註解狀態
 public class LocalDataInitializer implements ApplicationRunner {
 
+	private final UserRepository userRepository;
 	private final UserCommandService userCommandService;
 	private final RoleCommandService roleCommandService;
 
@@ -55,14 +55,20 @@ public class LocalDataInitializer implements ApplicationRunner {
 		// 讓底層 Hibernate 或 TenantInterceptor 在攔截時，能自動打上 tenant_id = 'WPG'
 		TenantContext.setCurrentTenantId("WPG");
 
+
+
 		try {
 			/*
-			 * ========================================== 🧑‍💼 步驟 A：建立超級管理員帳號 (Trigger
-			 * UserCreatedEvent) ==========================================
+			 *  🧑‍💼 步驟 A：建立超級管理員帳號 (Trigger UserCreatedEvent)
 			 */
 			log.info("👤 正在建立管理員帳號...");
 			CreateUserCommand createUserCommand = new CreateUserCommand("V-NICK.GH.ZHANG", "password123",
 					"V-NICK.GH.ZHANG@deltaww.com");
+			boolean exist = userRepository.existsByTenantIdAndUsername(TenantContext.getCurrentTenantId(), createUserCommand.username());
+			if (exist) {
+				return;
+			}
+
 			userCommandService.createUser(createUserCommand);
 
 			// 步驟 B：建立系統角色與權限點 (RBAC 初始化)
