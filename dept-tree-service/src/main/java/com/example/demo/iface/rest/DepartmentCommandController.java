@@ -1,19 +1,5 @@
 package com.example.demo.iface.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.application.service.DepartmentCommandService;
 import com.example.demo.application.service.DepartmentRestoreCommandService;
 import com.example.demo.application.service.DepartmentRestructureCommandService;
@@ -36,15 +22,29 @@ import com.example.demo.iface.dto.req.RenameDepartmentResource;
 import com.example.demo.iface.dto.res.DepartmentAssignedResource;
 import com.example.demo.iface.dto.res.DepartmentCreatedResource;
 import com.example.demo.iface.dto.res.DepartmentDeletedResource;
+import com.example.demo.iface.dto.res.DepartmentDisabledResource;
 import com.example.demo.iface.dto.res.DepartmentMovedResource;
+import com.example.demo.iface.dto.res.DepartmentRenamedResource;
 import com.example.demo.iface.dto.res.DepartmentRestoredResource;
 import com.example.demo.iface.dto.res.DepartmentTreeCreatedResource;
 import com.example.demo.iface.dto.res.DepartmentUnassignedResource;
 import com.example.demo.iface.dto.res.DepartmentsMergedResource;
 import com.example.demo.iface.dto.res.SortOrderChangedResource;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Department Command Controller (基礎設施層 - 部門寫入端 API 控制器)
@@ -141,7 +141,7 @@ public class DepartmentCommandController {
 		MoveDepartmentCommand command = new MoveDepartmentCommand(tenantId, resource.departmentId(),
 				resource.newParentId(), operator);
 		commandService.moveDepartment(command);
-		return ResponseEntity.ok(new DepartmentMovedResource("200", "Success"));
+		return new ResponseEntity<>(new DepartmentMovedResource("200", "Success"), HttpStatus.OK);
 	}
 
 	// =====================================================
@@ -169,7 +169,7 @@ public class DepartmentCommandController {
 		AssignEmployeeCommand command = new AssignEmployeeCommand(tenantId, departmentId, resource.employeeId(),
 				operator);
 		commandService.assignEmployee(command);
-		return new ResponseEntity<>(new DepartmentAssignedResource("200", "Success"), HttpStatus.CREATED);
+		return new ResponseEntity<>(new DepartmentAssignedResource("200", "Success"), HttpStatus.OK);
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class DepartmentCommandController {
 			@PathVariable("employeeId") String employeeId) {
 		UnassignEmployeeCommand command = new UnassignEmployeeCommand(tenantId, departmentId, employeeId, operator);
 		commandService.unassignEmployee(command);
-		return new ResponseEntity<>(new DepartmentUnassignedResource("200", "Success"), HttpStatus.CREATED);
+		return new ResponseEntity<>(new DepartmentUnassignedResource("200", "Success"), HttpStatus.OK);
 	}
 
 	// =========================================================
@@ -208,13 +208,13 @@ public class DepartmentCommandController {
 	 * @return {@code 204 No Content} 代表指令同步執行成功，但無需回傳冗餘的 Body 載體
 	 */
 	@PatchMapping("/{id}/name")
-	public ResponseEntity<Void> renameDepartment(@RequestHeader("X-Tenant-Id") String tenantId,
-			@RequestHeader("X-User-Id") String operator, @PathVariable("id") String departmentId,
-			@RequestBody RenameDepartmentResource resource) {
+	public ResponseEntity<DepartmentRenamedResource> renameDepartment(@RequestHeader("X-Tenant-Id") String tenantId,
+																	  @RequestHeader("X-User-Id") String operator, @PathVariable("id") String departmentId,
+																	  @RequestBody RenameDepartmentResource resource) {
 		RenameDepartmentCommand command = new RenameDepartmentCommand(tenantId, departmentId, resource.name(),
 				operator);
 		commandService.renameDepartment(command);
-		return ResponseEntity.noContent().build();
+		return new ResponseEntity<>(new DepartmentRenamedResource("200", "Success"), HttpStatus.OK);
 	}
 
 	/**
@@ -227,11 +227,11 @@ public class DepartmentCommandController {
 	 * @return {@code 204 No Content}
 	 */
 	@PatchMapping("/{id}/disable")
-	public ResponseEntity<Void> disableDepartment(@RequestHeader("X-Tenant-Id") String tenantId,
-			@RequestHeader("X-User-Id") String operator, @PathVariable("id") String departmentId) {
+	public ResponseEntity<DepartmentDisabledResource> disableDepartment(@RequestHeader("X-Tenant-Id") String tenantId,
+																		@RequestHeader("X-User-Id") String operator, @PathVariable("id") String departmentId) {
 		DisableDepartmentCommand command = new DisableDepartmentCommand(tenantId, departmentId, operator);
 		commandService.disableDepartment(command);
-		return ResponseEntity.noContent().build();
+		return new ResponseEntity<>(new DepartmentDisabledResource("200", "Success"), HttpStatus.OK);
 	}
 
 	/**

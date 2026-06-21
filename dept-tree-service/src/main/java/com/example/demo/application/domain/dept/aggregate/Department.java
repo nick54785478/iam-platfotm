@@ -3,22 +3,35 @@ package com.example.demo.application.domain.dept.aggregate;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentCode;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentId;
 import com.example.demo.application.domain.dept.aggregate.vo.DepartmentStatus;
-import com.example.demo.application.domain.dept.event.*;
+import com.example.demo.application.domain.dept.event.DepartmentCreatedEvent;
+import com.example.demo.application.domain.dept.event.DepartmentDeletedEvent;
+import com.example.demo.application.domain.dept.event.DepartmentDisabledEvent;
+import com.example.demo.application.domain.dept.event.DepartmentMergedEvent;
+import com.example.demo.application.domain.dept.event.DepartmentMovedEvent;
+import com.example.demo.application.domain.dept.event.DepartmentRenamedEvent;
+import com.example.demo.application.domain.dept.event.DepartmentRestoredEvent;
+import com.example.demo.application.domain.dept.event.DepartmentSortOrderChangedEvent;
+import com.example.demo.application.domain.dept.event.EmployeeAssignedToDepartmentEvent;
+import com.example.demo.application.domain.dept.event.EmployeeUnassignedFromDepartmentEvent;
 import com.example.demo.application.domain.shared.core.BaseAggregateRoot;
-import com.example.demo.application.domain.shared.event.DomainEvent;
 import com.example.demo.application.domain.shared.exception.DomainException;
 import com.example.demo.application.domain.shared.vo.TenantId;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.AfterDomainEventPublication;
-import org.springframework.data.domain.DomainEvents;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -314,6 +327,9 @@ public class Department extends BaseAggregateRoot {
      * 狀態，本聚合根依然破例允許執行「移出人員」，確保凍結組織能順利排空。 同時同步遞減 {@code activeEmployeeCount}。
      * </p>
      */
+    /**
+     * 人員解除指派：將特定員工從本部門的編制中徹底移出。
+     */
     public void unassignEmployee(String employeeId, String operator) {
         validateNotDeleted();
 
@@ -321,14 +337,24 @@ public class Department extends BaseAggregateRoot {
             throw new IllegalArgumentException("Target Employee ID cannot be blank for unassignment");
         }
 
-        // 維護內部防禦狀態 (防禦低於零的異常邊界)
-        if (this.activeEmployeeCount > 0) {
-            this.activeEmployeeCount--;
+        // 領域防禦：如果部門已經空了，直接中斷，絕對不發布任何事件！
+        // 這裡可以選擇 throw DomainException，或是 return (等冪性設計)。
+        // 在微服務重試機制中，通常建議 return 靜默處理以符合 Idempotency 原則。
+        if (this.activeEmployeeCount <= 0) {
+            throw new DomainException(String.format(
+                    "Aggregate Invariant Violation: 無法將員工 [%s] 移出，因為部門 [%s] 目前的編制人數已為 0。",
+                    employeeId, this.name
+            ));
         }
+
+        // 只有確定發生了實質的狀態變更，才執行後續動作
+        this.activeEmployeeCount--;
         touch(operator);
 
-        raise(new EmployeeUnassignedFromDepartmentEvent(this.tenantId.getValue(), this.id.getValue(), employeeId,
-                operator));
+        // 確保事件只有在「真的有扣到人」的時候才發出
+        raise(new EmployeeUnassignedFromDepartmentEvent(
+                this.tenantId.getValue(), this.id.getValue(), employeeId, operator
+        ));
     }
 
     /**
