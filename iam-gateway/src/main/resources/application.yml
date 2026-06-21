@@ -48,3 +48,30 @@ resilience4j:
     instances:
       deptCircuitBreaker:
         timeout-duration: 5s
+
+# ===================================================================
+# Spring 基礎設施配置 (包含 Redis 分布式快取與限流底層)
+# ===================================================================
+spring:
+  data:
+    redis:
+      # Redis 伺服器位址 (本機開發對應 Docker 暴露的 port)
+      host: localhost
+      port: 6379
+      # 企業級安全防線：連線密碼 (對齊 docker-compose 設定)
+      password: iam_redis_pass
+      # 使用的 Redis 資料庫索引 (預設為 0，通常提供 0-15)
+      database: 0
+      # 建立連線超時時間 (防禦網路瞬斷，建議設為 3 秒)
+      timeout: 3000ms
+      # Lettuce 連線池配置 (Spring Boot 預設的高效能 Reactive 支援客戶端)
+      lettuce:
+        pool:
+          # 連線池最大連線數 (提升高併發網關的吞吐量)
+          max-active: 16
+          # 連線池最大阻塞等待時間 (若連線池滿了，最多等 2 秒，防禦雪崩)
+          max-wait: 2000ms
+          # 連線池中的最大空閒連線
+          max-idle: 8
+          # 連線池中的最小空閒連線 (保持基礎連線水位，減少冷啟動 TCP 握手延遲)
+          min-idle: 2
