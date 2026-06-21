@@ -7,6 +7,8 @@ import com.example.demo.application.domain.dept.event.DepartmentMovedEvent;
 import com.example.demo.application.domain.dept.event.DepartmentRenamedEvent;
 import com.example.demo.application.domain.dept.event.DepartmentRestoredEvent;
 import com.example.demo.application.domain.dept.event.DepartmentSortOrderChangedEvent;
+import com.example.demo.application.domain.dept.event.EmployeeAssignedToDepartmentEvent;
+import com.example.demo.application.domain.dept.event.EmployeeUnassignedFromDepartmentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -88,6 +90,20 @@ public class DepartmentTreeRedisProjectionHandler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(DepartmentSortOrderChangedEvent event) {
         log.info("[CQRS-Redis-Projector] 偵測到部門排序權重變更，準備刷新視圖。租戶: {}", event.getTenantId());
+        flushAndRebuildCache(event.getTenantId());
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(EmployeeAssignedToDepartmentEvent event) {
+        log.info("[CQRS-Redis-Projector] 偵測到部門人員指派 (人數變更)，準備刷新視圖。租戶: {}", event.getTenantId());
+        flushAndRebuildCache(event.getTenantId());
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(EmployeeUnassignedFromDepartmentEvent event) {
+        log.info("[CQRS-Redis-Projector] 偵測到部門人員移出 (人數變更)，準備刷新視圖。租戶: {}", event.getTenantId());
         flushAndRebuildCache(event.getTenantId());
     }
 

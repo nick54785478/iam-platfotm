@@ -322,11 +322,11 @@ public class DepartmentCommandController {
 			@RequestHeader("X-User-ID") String operator, @PathVariable String sourceDeptId,
 			@RequestBody MergeDepartmentResource request) {
 
-		// 🛡️ 邊界防禦與請求轉發：
+		// 邊界防禦與請求轉發：
 		// Controller 僅作 HTTP 協議解析，直接將裸字串參數轉交給 Application Service 進行領域層編排
 		restructureCommandService.mergeDepartment(tenantId, sourceDeptId, request.targetDeptId(), operator);
 
-		// 💡 CQRS 回應哲學：
+		// CQRS 回應哲學：
 		// 由於寫入端不負責讀取查詢，且讀取端閉包表 (Closure Table) 正在異步重組中，
 		// 因此 Command API 僅回傳業務執行成功的確認訊息 (Ack)，不夾帶任何最新的部門狀態實體。
 		return ResponseEntity.ok(new DepartmentsMergedResource("200", "部門重組成功：資產已全數轉移"));
