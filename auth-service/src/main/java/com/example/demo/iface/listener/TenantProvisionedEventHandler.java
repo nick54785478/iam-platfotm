@@ -34,13 +34,13 @@ public class TenantProvisionedEventHandler {
 
 
 
-    @Transactional // 🛡️ 極度重要：保證冪等表寫入與下游業務邏輯在同一個 DB Transaction 中
+    @Transactional // 極度重要：保證冪等表寫入與下游業務邏輯在同一個 DB Transaction 中
     @KafkaListener(topics = TOPIC_TENANT_PROVISIONED, groupId = CONSUMER_GROUP)
     public void onTenantProvisioned(ConsumerRecord<String, String> record) {
         try {
             TenantProvisionedPayload payload = objectMapper.readValue(record.value(), TenantProvisionedPayload.class);
 
-            // 1. 🛡️ 執行高併發冪等性去重防禦
+            // 1. 執行高併發冪等性去重防禦
             // 底層的 Postgres ON CONFLICT 將自動承擔「行級別阻塞鎖」與「永久去重」的雙重責任
             if (!idempotencyHandler.tryProcess(payload.eventId().toString())) {
                 log.debug("[EDA] 忽略已處理的重複租戶開通事件: EventId={}, TenantId={}",

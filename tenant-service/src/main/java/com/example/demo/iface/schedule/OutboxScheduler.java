@@ -35,8 +35,8 @@ import java.util.List;
 public class OutboxScheduler {
 
     private final OutboxRepository outboxRepository;
-    private final DistributedLockManagerPort lockManager; // 🚀 依賴抽象鎖埠，解除 H2/Postgres 技術綁定
-    private final MessagePublisherPort messagePublisher;   // 🚀 依賴抽象發布埠，解除特定 MQ 技術綁定
+    private final DistributedLockManagerPort lockManager; // 依賴抽象鎖埠，解除 H2/Postgres 技術綁定
+    private final MessagePublisherPort messagePublisher;   // 依賴抽象發布埠，解除特定 MQ 技術綁定
     private final PlatformTransactionManager transactionManager;
 
     private static final String OUTBOX_LOCK_KEY = "job:outbox-export-lock";

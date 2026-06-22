@@ -2,7 +2,7 @@ package com.example.demo.infra.adapter;
 
 import com.example.demo.application.domain.tenant.aggregate.Tenant;
 import com.example.demo.application.domain.tenant.aggregate.vo.TenantId;
-import com.example.demo.application.port.TenantWriterPort;
+import com.example.demo.application.port.TenantStorerPort;
 import com.example.demo.application.domain.shared.event.DomainEvent;
 import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.persistence.entity.TenantEntity;
@@ -17,13 +17,13 @@ import java.util.Optional;
 /**
  * <h2>[基礎設施層 - 適配器] 租戶寫入側持久化適配器 (Tenant Writer Adapter)</h2>
  * <p>
- * 實作 {@link TenantWriterPort} 契約。負責處理 JPA 物理儲存，
+ * 實作 {@link TenantStorerPort} 契約。負責處理 JPA 物理儲存，
  * 並將聚合根內聚產生的 DomainEvent 自動包裝進全域多租戶信封中發射，完美解耦技術細節。
  * </p>
  */
 @Component
 @RequiredArgsConstructor
-public class TenantWriterAdapter implements TenantWriterPort {
+public class TenantStorerAdapter implements TenantStorerPort {
 
     private final SpringDataTenantRepository jpaRepository;
     private final ApplicationEventPublisher eventPublisher;

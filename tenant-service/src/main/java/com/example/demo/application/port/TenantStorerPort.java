@@ -11,7 +11,7 @@ import java.util.Optional;
  * 定義租戶資料持久化與領域事件派發的標準合約，全面隔離底層 JPA 技術細節。
  * </p>
  */
-public interface TenantWriterPort {
+public interface TenantStorerPort {
 
     /**
      * 依據租戶唯一識別碼查詢租戶狀態（還原為充血模型）

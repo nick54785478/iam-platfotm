@@ -3,6 +3,7 @@ package com.example.demo.iface.rest;
 import com.example.demo.iface.dto.GatewayResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,6 +56,16 @@ public class GatewayFallbackController {
                 .body(GatewayResponse.fail(
                         "IAM-503-AUTH-DOWN",
                         "認證授權中心正處於極高負載或維護中，暫時拒絕全新鑑權。"
+                ));
+    }
+
+    @GetMapping("/tenant")
+    public ResponseEntity<GatewayResponse<Void>> tenantFallback() {
+       return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(GatewayResponse.fail(
+                        "IAM-503-TENANT-MUTED",
+                        "平台租戶管理服務暫時不可用，網關已啟動動態降級，請稍後再試。"
                 ));
     }
 }

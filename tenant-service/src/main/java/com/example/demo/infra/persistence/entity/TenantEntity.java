@@ -46,7 +46,7 @@ public class TenantEntity {
     // ── 雙向轉換邏輯 (Mappers) ──
 
     /**
-     * 🏭 工廠方法：將純潔的領域聚合根轉換為 JPA 物理實體
+     * 工廠方法：將純潔的領域聚合根轉換為 JPA 物理實體
      */
     public static TenantEntity fromDomain(Tenant domain) {
         TenantEntity entity = new TenantEntity();
@@ -59,7 +59,7 @@ public class TenantEntity {
     }
 
     /**
-     * 🔄 狀態更新：將領域聚合根的最新變更覆蓋至既有的 DB 實體
+     * 狀態更新：將領域聚合根的最新變更覆蓋至既有的 DB 實體
      */
     public void updateFromDomain(Tenant domain) {
         this.companyName = domain.getCompanyName();
@@ -69,7 +69,7 @@ public class TenantEntity {
     }
 
     /**
-     * 🌳 數據還原 (Rehydration)：將資料庫欄位滿血復活為具備業務行為的充血聚合根
+     * 數據還原 (Rehydration)：將資料庫欄位滿血復活為具備業務行為的充血聚合根
      */
     public Tenant toDomain() {
         return new Tenant(

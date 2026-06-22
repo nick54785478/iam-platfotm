@@ -88,7 +88,23 @@ public class GatewayRoutesConfiguration {
 						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)
 						.filter(circuitBreaker("deptCircuitBreaker", URI.create("forward:/fallback/department")))
 						.before(uri("http://localhost:8081"))
-						.build());
+						.build())
+
+				/*
+				 * ===================================================================
+				 * 4. 🚀 平台租戶管理通道 (Tenant Service - Platform Core)
+				 * ===================================================================
+				 * 涵蓋：/api/v1/platform/tenants/** 租戶開通、方案升級、停權等頂級操作。
+				 * 轉發目標：獨立部署於 8082 Port 的 SaaS 大腦。
+				 * 崩潰防護：綁定專屬 tenantCircuitBreaker 熔斷器。
+				 */
+				 .and(route("tenant-service-route")
+					.route(path("/api/v1/platform/tenants/**"), http())
+					// 💡 流量特徵：管理員手動操作，極低頻率但不可失敗。給予寬鬆的 5次/10秒 限流。
+					.filter(rateLimitFactory.ipRateLimiter("tenant-admin", 5, 10))
+					.filter(circuitBreaker("tenantCircuitBreaker", URI.create("forward:/fallback/tenant")))
+					.before(uri("http://localhost:8082"))
+					.build());
 
 		// ===================================================================
 		// 全局兜底防護網 (Global Filter)

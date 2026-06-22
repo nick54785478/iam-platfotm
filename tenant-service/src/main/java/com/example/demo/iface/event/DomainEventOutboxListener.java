@@ -66,7 +66,7 @@ public class DomainEventOutboxListener {
             log.debug("[Outbox] 成功攔截並封存領域事件。EventId: {}, Type: {}", event.eventId(), eventType);
 
         } catch (JsonProcessingException e) {
-            // 🚨 致命異常：如果 JSON 序列化失敗，必須拋出 RuntimeException 來強制中斷並 Rollback 當前 Transaction！
+            // 致命異常：如果 JSON 序列化失敗，必須拋出 RuntimeException 來強制中斷並 Rollback 當前 Transaction！
             log.error("[Outbox] 領域事件序列化 JSON 失敗，觸發強制 Rollback！EventId: {}", event.eventId(), e);
             throw new IllegalStateException("Failed to serialize domain event to outbox payload", e);
         }
