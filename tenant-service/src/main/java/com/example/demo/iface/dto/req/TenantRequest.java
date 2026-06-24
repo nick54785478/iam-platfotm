@@ -11,6 +11,11 @@ public class TenantRequest {
      * 接收前端傳來的開通請求
      */
     public record ProvisionTenantResource(
+
+            @NotBlank(message = "Tenant ID is required")
+            @Size(max = 100)
+            String tenantId,
+
             @NotBlank(message = "Company name is required")
             @Size(max = 100)
             String companyName,
@@ -23,7 +28,7 @@ public class TenantRequest {
             String adminEmail,
 
             @NotBlank
-            @Size(min = 12, message = "Password must be at least 12 characters")
+            @Size(min = 8, message = "Password must be at least 8 characters")
             String plainPassword
     ) {}
 

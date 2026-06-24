@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * </p>
  */
 @RestController
-@RequestMapping("/api/v1/platform/tenants")
+@RequestMapping("/api/platform/tenants")
 @RequiredArgsConstructor
 public class TenantCommandController {
 
@@ -42,6 +42,7 @@ public class TenantCommandController {
 
         // 1. 將 Web DTO 轉換為 Application Command (防腐層轉換)
         ProvisionTenantCommand command = new ProvisionTenantCommand(
+                request.tenantId(),
                 request.companyName(),
                 PlanType.valueOf(request.planType()) ,
                 request.adminEmail(),

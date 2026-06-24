@@ -37,6 +37,7 @@ public class TenantCommandService {
 
         // 1. 呼叫聚合根的靜態工廠方法，執行商業邏輯並內聚產生 TenantProvisionedDomainEvent
         Tenant newTenant = Tenant.provisionNew(
+                command.tenantId(),
                 command.companyName(),
                 command.planType(),
                 command.adminEmail(),

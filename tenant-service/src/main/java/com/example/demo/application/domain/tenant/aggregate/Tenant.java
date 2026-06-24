@@ -57,8 +57,11 @@ public class Tenant {
      * @param plainPassword 初始明碼密碼 (僅供一次性傳遞給 Auth 服務加密)
      * @return 合法的 Tenant 聚合根
      */
-    public static Tenant provisionNew(String companyName, PlanType planType, String adminEmail, String plainPassword) {
+    public static Tenant provisionNew(String tenantId, String companyName, PlanType planType, String adminEmail, String plainPassword) {
         if (companyName == null || companyName.isBlank()) {
+            throw new IllegalArgumentException("Company name cannot be empty");
+        }
+        if (tenantId == null || tenantId.isBlank()) {
             throw new IllegalArgumentException("Company name cannot be empty");
         }
 
@@ -66,7 +69,7 @@ public class Tenant {
         Instant initialExpiry = Instant.now().plus(365, ChronoUnit.DAYS);
 
         Tenant newTenant = new Tenant(
-                TenantId.generate(),
+                new TenantId(tenantId),
                 companyName,
                 planType,
                 TenantStatus.ACTIVE,

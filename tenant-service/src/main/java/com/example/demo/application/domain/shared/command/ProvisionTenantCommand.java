@@ -6,6 +6,7 @@ import com.example.demo.application.domain.tenant.aggregate.vo.PlanType;
  * <h2>[應用層] 租戶入駐指令</h2>
  */
 public record ProvisionTenantCommand(
+        String tenantId,
         String companyName,
         PlanType planType,
         String adminEmail,
