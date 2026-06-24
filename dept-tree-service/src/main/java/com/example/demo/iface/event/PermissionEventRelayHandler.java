@@ -73,11 +73,7 @@ public class PermissionEventRelayHandler {
             String messageJson = objectMapper.writeValueAsString(eventPayload);
 
             // 2. 封裝成高內聚的指令物件 (PublishEventCommand)
-            PublishEventCommand command = PublishEventCommand.builder()
-                    .topic(TOPIC_PERMISSION_EVENTS)
-                    .routingKey(routingKey)
-                    .eventJson(messageJson)
-                    .build();
+            PublishEventCommand command = new PublishEventCommand(TOPIC_PERMISSION_EVENTS, routingKey, messageJson);
 
             // 3. 透過 Port 向外部發送，將網路 I/O 的髒活交給 Adapter 處理
             messagePublisher.send(command);
