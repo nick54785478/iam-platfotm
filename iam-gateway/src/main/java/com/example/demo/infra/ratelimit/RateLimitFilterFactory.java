@@ -2,16 +2,6 @@ package com.example.demo.infra.ratelimit;
 
 import com.example.demo.application.port.GatewayRateLimiterPort;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.function.HandlerFilterFunction;
-import org.springframework.web.servlet.function.ServerResponse;
-
-import java.io.IOException;
-
-
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -33,7 +23,7 @@ import java.io.IOException;
 @Component
 public class RateLimitFilterFactory {
 
-    // 🚀 核心防線：透過 Qualifier 鎖定 Redis 分布式限流器 (Bean 名稱預設為類別首字母小寫)
+    // 核心防線：透過 Qualifier 鎖定 Redis 分布式限流器 (Bean 名稱預設為類別首字母小寫)
     private final GatewayRateLimiterPort rateLimiter;
 
     public RateLimitFilterFactory(@Qualifier("redisRateLimiterAdapter") GatewayRateLimiterPort rateLimiter) {
@@ -55,7 +45,7 @@ public class RateLimitFilterFactory {
 
             /*
              * ===================================================================
-             * 🌐 1. 客戶端真實 IP 拔取 (Anti-Proxy Bypass)
+             * 1. 客戶端真實 IP 拔取 (Anti-Proxy Bypass)
              * ===================================================================
              */
             String ip = request.headers().firstHeader("X-Forwarded-For");
@@ -68,7 +58,7 @@ public class RateLimitFilterFactory {
 
             /*
              * ===================================================================
-             * ⚖️ 2. 流量盤查與扣款 (利用 IoC 注入的 Redis 引擎)
+             * 2. 流量盤查與扣款 (利用 IoC 注入的 Redis 引擎)
              * ===================================================================
              */
             GatewayRateLimiterPort.RateLimitResult result = rateLimiter.isAllowed(limitKey, maxRequests, windowSeconds);
