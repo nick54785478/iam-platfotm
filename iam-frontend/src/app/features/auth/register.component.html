@@ -1,0 +1,64 @@
+<div class="register-container">
+  <div class="glow-bg"></div>
+  <div class="glass-panel register-card animate-fade-in">
+    <div class="logo-header">
+      <div class="logo-icon">▲</div>
+      <h2 class="gradient-text">Create SaaS Tenant</h2>
+      <p class="subtitle">Provision a New Enterprise Workspace</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-group p-fluid">
+        <label class="form-label" for="tenantId">Tenant Code (ID)</label>
+        <input pInputText id="tenantId" name="tenantId" [(ngModel)]="tenantId" required placeholder="e.g. ACME, GOOG" />
+      </div>
+
+      <div class="form-group p-fluid">
+        <label class="form-label" for="companyName">Company Name</label>
+        <input pInputText id="companyName" name="companyName" [(ngModel)]="companyName" required
+          placeholder="Acme Corporation" />
+      </div>
+
+      <div class="form-group p-fluid">
+        <label class="form-label" for="planType">Subscription Tier</label>
+        <select id="planType" name="planType" class="form-input" [(ngModel)]="planType" required
+          style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 6px;">
+          <option value="FREE">FREE</option>
+          <option value="BUSINESS">BUSINESS</option>
+          <option value="ENTERPRISE">ENTERPRISE</option>
+        </select>
+      </div>
+
+      <div class="form-group p-fluid mt-3">
+        <label class="form-label" for="adminEmail">Admin Email</label>
+        <input pInputText type="email" id="adminEmail" name="adminEmail" [(ngModel)]="adminEmail" required email
+          placeholder="admin@company.com" />
+      </div>
+
+      <div class="form-group p-fluid">
+        <label class="form-label" for="plainPassword">Admin Password</label>
+        <p-password id="plainPassword" name="plainPassword" [(ngModel)]="plainPassword" [required]="true"
+          placeholder="••••••••" [toggleMask]="true" [feedback]="true"></p-password>
+      </div>
+
+      <div *ngIf="successMessage()" class="alert-box success">
+        {{ successMessage() }}
+      </div>
+
+      <div *ngIf="errorMessage()" class="alert-box error">
+        {{ errorMessage() }}
+      </div>
+
+      <p-button type="submit" [disabled]="registerForm.invalid || isLoading()" styleClass="w-full mt-3 glow-button"
+        [style]="{'width': '100%'}">
+        <span *ngIf="!isLoading()">Provision Tenant</span>
+        <span *ngIf="isLoading()">Provisioning...</span>
+      </p-button>
+    </form>
+
+    <div class="card-footer">
+      Already have a tenant?
+      <a routerLink="/login" class="login-link">Sign In</a>
+    </div>
+  </div>
+</div>

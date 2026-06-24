@@ -1,0 +1,154 @@
+<div class="tenant-container">
+  <div class="stats-row">
+    <div class="glass-panel stat-card">
+      <div class="stat-label">Active Enterprises</div>
+      <div class="stat-value">{{ activeCount() }}</div>
+    </div>
+    <div class="glass-panel stat-card">
+      <div class="stat-label">Enterprise Tier</div>
+      <div class="stat-value gradient-text">{{ enterpriseCount() }}</div>
+    </div>
+    <div class="glass-panel stat-card">
+      <div class="stat-label">Suspended Space</div>
+      <div class="stat-value danger-text">{{ suspendedCount() }}</div>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- Tenants Search & List -->
+    <div class="list-section glass-panel">
+      <div class="section-header">
+        <h3>Enterprise Directory</h3>
+        <div class="search-box p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" placeholder="Search company name..." [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" class="search-input" />
+        </div>
+      </div>
+
+      <div class="table-container mt-4">
+        <p-table [value]="tenants()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Tenant ID</th>
+              <th>Company Name</th>
+              <th>Plan Tier</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-tenant>
+            <tr>
+              <td><code>{{ tenant.tenantId }}</code></td>
+              <td>{{ tenant.companyName }}</td>
+              <td>
+                <span class="badge" [ngClass]="getPlanClass(tenant.planType)">
+                  {{ tenant.planType }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="tenant.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
+                  {{ tenant.status }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <p-button icon="pi pi-eye" [rounded]="true" [text]="true" (click)="viewDetails(tenant)" title="View details"></p-button>
+                  <p-button icon="pi pi-bolt" [rounded]="true" [text]="true" severity="warning" (click)="openUpgradeModal(tenant)" title="Upgrade Plan"></p-button>
+                  <p-button *ngIf="tenant.status === 'ACTIVE'" icon="pi pi-ban" [rounded]="true" [text]="true" severity="danger" (click)="openSuspendModal(tenant)" title="Suspend Tenant"></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+
+    <!-- Provision & Action Panels -->
+    <div class="action-sidebar">
+      <!-- Provision Tenant Panel -->
+      <div class="glass-panel action-card">
+        <h3>Provision New Tenant</h3>
+        <form (ngSubmit)="onProvision()" #provForm="ngForm" class="sidebar-form">
+          <div class="form-group p-fluid">
+            <label class="form-label">Tenant ID (Code)</label>
+            <input pInputText name="provId" [(ngModel)]="provId" required placeholder="e.g. MSFT, GOOG" />
+          </div>
+
+          <div class="form-group p-fluid">
+            <label class="form-label">Company Name</label>
+            <input pInputText name="provName" [(ngModel)]="provName" required placeholder="Acme Corporation" />
+          </div>
+
+          <div class="form-group p-fluid">
+            <label class="form-label">Plan Tier</label>
+            <select name="provPlan" class="form-input" [(ngModel)]="provPlan" style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 6px;">
+              <option value="FREE">FREE</option>
+              <option value="BUSINESS">BUSINESS</option>
+              <option value="ENTERPRISE">ENTERPRISE</option>
+            </select>
+          </div>
+
+          <div class="form-group p-fluid">
+            <label class="form-label">Admin Email</label>
+            <input pInputText type="email" name="provEmail" [(ngModel)]="provEmail" required email placeholder="admin@company.com" />
+          </div>
+
+          <div class="form-group p-fluid">
+            <label class="form-label">Admin Password</label>
+            <p-password name="provPassword" [(ngModel)]="provPassword" [required]="true" placeholder="Temporary password" [toggleMask]="true" [feedback]="false"></p-password>
+          </div>
+
+          <p-button type="submit" [disabled]="provForm.invalid" styleClass="w-full mt-3 glow-button" [style]="{'width': '100%'}">
+            Provision Space
+          </p-button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals using PrimeNG Dialog -->
+  
+  <p-dialog header="Tenant Details" [visible]="selectedDetail() !== null" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '500px'}" styleClass="glass-dialog">
+    <div class="details-grid" *ngIf="selectedDetail() as details">
+      <div><strong>Tenant ID:</strong> <code>{{ details.tenantId }}</code></div>
+      <div><strong>Company Name:</strong> {{ details.companyName }}</div>
+      <div><strong>Subscription Tier:</strong> {{ details.planType }}</div>
+      <div><strong>Status:</strong> {{ details.status }}</div>
+      <div><strong>Owner Admin Email:</strong> {{ details.adminEmail }}</div>
+      <div><strong>Creation Timestamp:</strong> {{ details.createdAt | date:'medium' }}</div>
+      <div *ngIf="details.suspendedReason" class="danger-box">
+        <strong>Suspension Reason:</strong> {{ details.suspendedReason }}
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Dismiss" (click)="closeModals()" severity="secondary"></p-button>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Upgrade Tier - {{ upgradeTarget()?.companyName }}" [visible]="upgradeTarget() !== null" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '500px'}" styleClass="glass-dialog">
+    <p class="modal-desc">Upgrade the cloud subscription tier instantly. Changes take effect on next API call.</p>
+    <div class="plan-cards">
+      <div *ngFor="let tier of ['FREE', 'BUSINESS', 'ENTERPRISE']" class="plan-tier-card" [class.active]="newPlan() === tier" (click)="newPlan.set(tier)">
+        <h4>{{ tier }}</h4>
+        <span class="plan-check" *ngIf="newPlan() === tier">✓ Selected</span>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+      <p-button label="Confirm Upgrade" styleClass="glow-button" (click)="onUpgradeSubmit()"></p-button>
+    </ng-template>
+  </p-dialog>
+
+  <p-dialog header="Suspend Tenant - {{ suspendTarget()?.companyName }}" [visible]="suspendTarget() !== null" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '500px'}" styleClass="glass-dialog">
+    <p class="modal-desc">All user authorization contexts under this space will be temporarily blocked.</p>
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Reason for Suspension</label>
+      <textarea pInputTextarea [(ngModel)]="suspendReason" placeholder="e.g. Terms violation, subscription expired" rows="3"></textarea>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+      <p-button label="Confirm Suspend" severity="danger" (click)="onSuspendSubmit()"></p-button>
+    </ng-template>
+  </p-dialog>
+
+</div>

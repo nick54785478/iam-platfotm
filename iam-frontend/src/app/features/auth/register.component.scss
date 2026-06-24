@@ -1,0 +1,113 @@
+.register-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+.glow-bg {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 70%);
+  top: 10%;
+  right: 10%;
+  filter: blur(80px);
+  z-index: 1;
+}
+
+.register-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  margin: 20px;
+}
+
+.logo-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo-icon {
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.alert-box {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 15px;
+  font-size: 0.875rem;
+}
+
+.alert-box.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.alert-box.success {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.card-footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.login-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 5px;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* Adjust PrimeNG styles for dark glassmorphism */
+::ng-deep .p-inputtext, ::ng-deep .p-password input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.75rem 1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .p-inputtext:focus, ::ng-deep .p-password input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+::ng-deep .p-password {
+  width: 100%;
+}
+::ng-deep .p-button {
+  background: var(--primary) !important;
+  border: none !important;
+}
+::ng-deep .p-button:hover {
+  background: var(--primary-hover) !important;
+}

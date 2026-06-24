@@ -1,0 +1,318 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* CSS Variables for Premium Dark Theme Ecosystem */
+:root {
+  --font-primary: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+
+  /* Color Palette */
+  --bg-primary: #080c14;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+  --bg-glass: rgba(15, 23, 42, 0.65);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.35);
+  --secondary: #8b5cf6;
+  --secondary-glow: rgba(139, 92, 246, 0.35);
+
+  --accent-pink: #ec4899;
+  --accent-cyan: #06b6d4;
+  
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.2);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.2);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.2);
+
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(59, 130, 246, 0.5);
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+}
+
+/* Global Reset & Base Elements */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Reusable Glassmorphism & Card Utility Classes */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition-normal);
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glow-button {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+button:not(.p-button).glow-button, a:not(.p-button).glow-button {
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  border-radius: var(--radius-md);
+}
+
+/* Ensure all PrimeNG buttons have good padding and consistent shape */
+.p-button {
+  padding: 0.75rem 1.5rem !important;
+  font-family: var(--font-display) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+}
+
+.glow-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5), 0 0 12px rgba(139, 92, 246, 0.3);
+}
+
+.glow-button:active {
+  transform: translateY(0);
+}
+
+.secondary-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Forms & Inputs styling */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  transition: var(--transition-normal);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: var(--success-glow);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: var(--warning-glow);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-danger {
+  background: var(--danger-glow);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ==========================================
+   Global PrimeNG Component Overrides
+   ========================================== */
+
+/* DataTable overrides */
+.p-datatable .p-datatable-thead > tr > th {
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+.p-datatable .p-datatable-tbody > tr {
+  background: transparent;
+  color: var(--text-primary);
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--border-color);
+}
+.p-datatable .p-paginator {
+  background: transparent;
+  border-color: var(--border-color);
+}
+
+/* Glass Dialog Global Styles */
+.glass-dialog {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.glass-dialog .p-dialog-header, 
+.glass-dialog .p-dialog-content, 
+.glass-dialog .p-dialog-footer {
+  background: transparent !important;
+  color: var(--text-primary);
+  padding: 1.5rem;
+}
+
+.glass-dialog .p-dialog-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+}
+
+.glass-dialog .p-dialog-header .p-dialog-header-icon {
+  color: var(--text-secondary);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.glass-dialog .p-dialog-header .p-dialog-header-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.glass-dialog .p-dialog-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Form Inputs globally inside and outside dialogs */
+.p-inputtext, .p-password input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease !important;
+  padding: 0.75rem !important;
+}
+.p-inputtext:focus, .p-password input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}

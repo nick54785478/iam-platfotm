@@ -1,0 +1,41 @@
+<div class="login-container">
+  <div class="glow-bg"></div>
+  <div class="glass-panel login-card animate-fade-in">
+    <div class="logo-header">
+      <div class="logo-icon">▲</div>
+      <h2 class="gradient-text">IAM Platform</h2>
+      <p class="subtitle">SaaS Enterprise Authentication Gateway</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group p-fluid">
+        <label class="form-label" for="tenantCode">Tenant Code</label>
+        <input pInputText id="tenantCode" name="tenantCode" [(ngModel)]="tenantCode" required placeholder="e.g. DEFAULT, ACME" />
+      </div>
+
+      <div class="form-group p-fluid">
+        <label class="form-label" for="username">Username</label>
+        <input pInputText id="username" name="username" [(ngModel)]="username" required placeholder="Enter your username" />
+      </div>
+
+      <div class="form-group p-fluid">
+        <label class="form-label" for="password">Password</label>
+        <p-password id="password" name="password" [(ngModel)]="password" [required]="true" placeholder="••••••••" [toggleMask]="true" [feedback]="false"></p-password>
+      </div>
+
+      <div *ngIf="errorMessage()" class="alert-box">
+        {{ errorMessage() }}
+      </div>
+
+      <p-button type="submit" [disabled]="loginForm.invalid || isLoading()" styleClass="w-full mt-3 glow-button" [style]="{'width': '100%'}">
+        <span *ngIf="!isLoading()">Authenticate Session</span>
+        <span *ngIf="isLoading()">Signing In...</span>
+      </p-button>
+    </form>
+
+    <div class="card-footer">
+      Don't have a tenant user?
+      <a routerLink="/register" class="register-link">Register Account</a>
+    </div>
+  </div>
+</div>

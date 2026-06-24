@@ -1,0 +1,245 @@
+<div class="dept-container animate-fade-in">
+  <!-- Top Actions Search bar -->
+  <div class="dept-header glass-panel">
+    <div class="search-wrap">
+      <input pInputText type="text" placeholder="Search departments..." class="search-input" [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" />
+    </div>
+    <div class="header-btns">
+      <p-button label="Add Root Department" icon="pi pi-plus" (click)="openCreateDeptModal(null)" styleClass="glow-button"></p-button>
+      <p-button label="Refresh Tree" icon="pi pi-refresh" severity="secondary" (click)="loadTree()"></p-button>
+    </div>
+  </div>
+
+  <!-- Main Dual Pane Layout -->
+  <div class="dept-layout">
+    
+    <!-- Left Pane: Interactive Org Tree -->
+    <div class="tree-pane glass-panel">
+      <h3>Organization Structure</h3>
+      <div class="tree-scroller">
+        <div *ngIf="rootNodes().length === 0" class="empty-state">
+          No departments defined yet. Click "Add Root Department" to begin.
+        </div>
+        
+        <!-- Recursive Tree Node template -->
+        <ng-template #nodeTemplate let-node>
+          <div
+            class="tree-node"
+            [class.selected]="selectedNode()?.id === node.id"
+            [class.disabled]="node.status === 'DISABLED'"
+            (click)="selectNode(node); $event.stopPropagation()"
+            draggable="true"
+            (dragstart)="onDragStart($event, node)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop($event, node)"
+          >
+            <span class="node-arrow" *ngIf="node.children && node.children.length > 0">▼</span>
+            <span class="node-icon">🏢</span>
+            <span class="node-name">{{ node.name }}</span>
+            <span class="node-code"><code>{{ node.code }}</code></span>
+            
+            <span class="employee-counter">
+              👥 {{ node.directEmployeeCount }}/{{ node.totalEmployeeCount }}
+            </span>
+            
+            <!-- Hover Node commands -->
+            <div class="node-hover-actions">
+              <button (click)="openCreateDeptModal(node); $event.stopPropagation()" title="Add sub-department">+</button>
+              <button (click)="openRenameModal(node); $event.stopPropagation()" title="Rename">✏️</button>
+              <button (click)="onDisableDept(node.id); $event.stopPropagation()" title="Disable">🚫</button>
+              <button (click)="onDeleteDept(node.id); $event.stopPropagation()" title="Delete cascading">×</button>
+            </div>
+          </div>
+
+          <!-- Children Container -->
+          <div class="node-children" *ngIf="node.children && node.children.length > 0">
+            <ng-container *ngFor="let child of node.children">
+              <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: child }"></ng-container>
+            </ng-container>
+          </div>
+        </ng-template>
+
+        <!-- Render root level nodes -->
+        <div *ngFor="let rootNode of rootNodes()">
+          <ng-container *ngTemplateOutlet="nodeTemplate; context:{ $implicit: rootNode }"></ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Pane: Inspector Panel -->
+    <div class="inspector-pane glass-panel">
+      <div *ngIf="!selectedNode()" class="empty-inspector">
+        <span class="inspector-icon">🏢</span>
+        <h4>No Department Selected</h4>
+        <p>Select a node in the org tree to inspect hierarchy, configure members, merge operations, or access the Event Sourcing Time Machine.</p>
+      </div>
+
+      <div *ngIf="selectedNode() as node" class="inspector-content">
+        <div class="inspector-header">
+          <span class="badge" [ngClass]="node.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
+            {{ node.status }}
+          </span>
+          <h3>{{ node.name }}</h3>
+          <p>Code: <code>{{ node.code }}</code> | ID: <code>{{ node.id }}</code></p>
+        </div>
+
+        <!-- Tab Selectors within Inspector -->
+        <div class="inspector-tabs">
+          <button [class.active]="inspectorTab() === 'personnel'" (click)="inspectorTab.set('personnel')">Personnel</button>
+          <button [class.active]="inspectorTab() === 'restructure'" (click)="inspectorTab.set('restructure')">Restructure</button>
+          <button [class.active]="inspectorTab() === 'timemachine'" (click)="inspectorTab.set('timemachine')">Time Machine</button>
+        </div>
+
+        <!-- TAB 1: PERSONNEL -->
+        <div *ngIf="inspectorTab() === 'personnel'" class="tab-body mt-3">
+          <h4>Department Staff Allocation</h4>
+          <div class="member-list">
+            <div *ngFor="let emp of activeEmployees()" class="member-item">
+              <span>👤 {{ emp }}</span>
+              <button (click)="onUnassignEmployee(emp)" class="mini-btn danger" title="Unassign Staff">×</button>
+            </div>
+            <div *ngIf="activeEmployees().length === 0" class="empty-list-label">
+              No staff allocated to this department.
+            </div>
+          </div>
+          <div class="add-staff-form" style="display:flex; gap: 8px;">
+            <input pInputText type="text" placeholder="Employee user ID (e.g. alex.zhang)..." [(ngModel)]="employeeToAssign" style="flex:1;"/>
+            <p-button label="Assign Staff" (click)="onAssignEmployee()" styleClass="glow-button"></p-button>
+          </div>
+        </div>
+
+        <!-- TAB 2: RESTRUCTURE & MERGE -->
+        <div *ngIf="inspectorTab() === 'restructure'" class="tab-body mt-3">
+          <h4>Restructure Operations</h4>
+          <p class="tab-desc">Perform advanced structural modifications. These operations post events to the Event Log instantly.</p>
+          
+          <!-- Sort Order Config -->
+          <div class="sort-order-box mt-3">
+            <label class="form-label">Sort Order Weight (UI hierarchy sorting)</label>
+            <div class="sort-input-row mt-2" style="display: flex; gap: 8px;">
+              <input pInputText type="number" [(ngModel)]="nodeSortOrder" style="width: 100px;"/>
+              <p-button label="Save Order" severity="secondary" (click)="onSaveSortOrder()"></p-button>
+            </div>
+          </div>
+
+          <!-- Merge Department Section -->
+          <div class="merge-box danger-border-box mt-4">
+            <h5>Merge Department</h5>
+            <p class="box-desc mt-2">
+              This transfers all personnel and sub-department tree allocations of this department into a target department, and permanently suspends this node.
+            </p>
+            <div class="form-group p-fluid mt-3">
+              <label class="form-label">Select Target Department</label>
+              <select class="form-input" [(ngModel)]="mergeTargetId" style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 6px;">
+                <option value="">-- Choose target department --</option>
+                <option *ngFor="let opt of flatDeptsList()" [value]="opt.id">
+                  {{ opt.name }} ({{ opt.code }})
+                </option>
+              </select>
+            </div>
+            <p-button label="Confirm & Execute Merge" severity="danger" [disabled]="!mergeTargetId" (click)="onMergeDepartments()" styleClass="w-full mt-3 glow-button" [style]="{'width':'100%'}"></p-button>
+          </div>
+        </div>
+
+        <!-- TAB 3: TIME MACHINE -->
+        <div *ngIf="inspectorTab() === 'timemachine'" class="tab-body mt-3">
+          <h4>Event Sourcing Temporal Explorer</h4>
+          <p class="tab-desc">Slide back to historical states. Replays the outbox audit events in-memory.</p>
+
+          <!-- State Replayer Slider -->
+          <div class="slider-section mt-3">
+            <div class="slider-meta">
+              <span>Selected Date:</span>
+              <strong class="selected-time">{{ replayTimestamp() | date:'medium' }}</strong>
+            </div>
+            <input
+              type="range"
+              class="time-slider"
+              [min]="0"
+              [max]="eventTimeline().length - 1"
+              [value]="sliderIndex()"
+              (input)="onSliderChange($event)"
+              [disabled]="eventTimeline().length === 0"
+            />
+            <div class="slider-ticks">
+              <span>Origin</span>
+              <span>Latest State</span>
+            </div>
+          </div>
+
+          <!-- Time Machine Snapshot State Box -->
+          <div class="temporal-state-box mt-3" *ngIf="temporalState()">
+            <h5>定格歷史狀態快照 (Version: {{ temporalState()?.version }})</h5>
+            <div class="state-fields mt-2">
+              <div><strong>Name:</strong> {{ temporalState()?.name }}</div>
+              <div><strong>Code:</strong> <code>{{ temporalState()?.code }}</code></div>
+              <div><strong>Status:</strong> {{ temporalState()?.status }}</div>
+              <div><strong>Employee 編制數:</strong> {{ temporalState()?.activeEmployeeCount }}</div>
+            </div>
+            <p-button *ngIf="temporalState()?.status === 'DISABLED' || node.status === 'DISABLED'" label="🕒 觸發時光機復活 (Undelete)" (click)="onRestoreDept()" styleClass="w-full mt-3 glow-button" [style]="{'width':'100%'}"></p-button>
+          </div>
+
+          <!-- Events timeline -->
+          <div class="timeline-container mt-4">
+            <h5>Audit Event Log</h5>
+            <div class="timeline">
+              <div
+                *ngFor="let ev of eventTimeline(); let i = index"
+                class="timeline-item"
+                [class.active]="i <= sliderIndex()"
+              >
+                <div class="timeline-dot"></div>
+                <div class="timeline-meta">
+                  <div class="event-type"><strong>{{ ev.eventType }}</strong></div>
+                  <div class="event-details">By: {{ ev.operatorId }} | Version: {{ ev.version }}</div>
+                  <div class="event-time">{{ ev.occurredAt | date:'short' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Create Department Modal -->
+  <p-dialog header="Create Department" [visible]="showCreateModal()" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+    <form (ngSubmit)="onCreateDept()" #deptForm="ngForm">
+      <div class="form-group p-fluid">
+        <label class="form-label">Parent Department</label>
+        <input pInputText [value]="createTargetParent() ? createTargetParent()?.name : 'Root level'" disabled />
+      </div>
+      <div class="form-group p-fluid mt-3">
+        <label class="form-label">Department ID (Unique Code Key)</label>
+        <input pInputText [(ngModel)]="newDeptId" name="newDeptId" required placeholder="e.g. DEPT_MKT"/>
+      </div>
+      <div class="form-group p-fluid mt-3">
+        <label class="form-label">Department Code (Display Tag)</label>
+        <input pInputText [(ngModel)]="newDeptCode" name="newDeptCode" required placeholder="MKT"/>
+      </div>
+      <div class="form-group p-fluid mt-3">
+        <label class="form-label">Department Name</label>
+        <input pInputText [(ngModel)]="newDeptName" name="newDeptName" required placeholder="Marketing Department"/>
+      </div>
+      <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content:flex-end; gap:8px;">
+        <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+        <p-button label="Confirm Create" type="submit" [disabled]="deptForm.invalid" styleClass="glow-button"></p-button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Rename Department Modal -->
+  <p-dialog header="Rename Department - {{ renameTarget()?.code }}" [visible]="renameTarget() !== null" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+    <div class="form-group p-fluid">
+      <label class="form-label">New Department Name</label>
+      <input pInputText [(ngModel)]="newRenameVal" required placeholder="Enter new name"/>
+    </div>
+    <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content:flex-end; gap:8px;">
+      <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+      <p-button label="Confirm Rename" (click)="onRenameDeptSubmit()" styleClass="glow-button"></p-button>
+    </div>
+  </p-dialog>
+
+</div>
