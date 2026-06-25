@@ -28,10 +28,16 @@
 >* 讀取端效能怪獸： 讀取端投影器 (Projector) 透過監聽領域事件，異步維護 department_tree 閉包表。
 >* $O(1)$ 幾何操作： 不論是查詢整棵子樹、祖先血脈，還是進行防禦性的循環圖 (Cyclic Graph) 檢測，皆能在單次 SQL 查詢內完成，徹底擺脫遞迴查詢的夢魘。
 
+**5. 雙軌聯防全動態權限防護 (Dual-Track Dynamic Authorization)**
+
+>* 共用核心隔離 (Shared Kernel Pattern)：將安全防護引擎打包為獨立二進位套件。引擎內部採用嚴格依賴反轉 (DIP)，定義抽象輸出埠 (ApiResourceRuleQueryRepositoryPort)，將具體 JPA Entity 實作留給各微服務自治，實現「防禦邏輯共用，資料綱要自治」。
+>* 快取旁路引擎 (Cache-Aside & O(1) Routing)：於攔截器層實作動態 URI 匹配，並引入 Redis 進行精確路徑實體化快取。降維解析包含 AntPath 萬用字元與租戶專屬覆寫的複雜權限樹。
+
 ## 核心業務情境 (Key Use Cases)
 >* 組織無縫重組 (Org Restructuring)： 支援 Merge (合併) 與 Move (掛載點轉移)。一鍵自動平移子部門與員工編制，並安全清理來源部門狀態。
 >* 人員編制大遷徙 (Mass Employee Transfer)： 利用 Event Replay 瞬間鎖定轉移名單，無須依賴低效的關聯表雙寫。
 >* 時光機還原 (Undelete & Restore)： 支援從邏輯刪除狀態中滿血復活，並包含自動回歸頂層 Root 的拓撲防禦機制，防止產生幽靈孤兒節點。
+>* 熱更新 API 權限管控 (Hot-Reload API Access Control)：管理員可隨時調整任一微服務之 API 進入門檻，透過 Redis Pattern Eviction 確保微秒級的全域安全策略生效。
 
 ## 系統目錄結構 (Hexagonal View)
   ```
@@ -74,3 +80,4 @@
 >* Event Immutable Rule: 所有的 DomainEvent 必須是不可變的 (Immutable)，且必須包含 tenantId 與發生時間。
 >* Cross-Aggregate Operations: 若業務邏輯跨越兩個以上的 Aggregate，禁止在 Aggregate 內部互相調用，必須透過 ApplicationService 進行協調。
 >* Read-Model Segregation: 任何 _view 或讀取專用的查詢，絕對禁止注入到寫入端 (domain 或 application 的 Command Service 中)。
+>* Shared Kernel Purity: shared-kernel 模組嚴禁引入任何特定微服務的具體業務邏輯與 JPA 實體類別。必須透過定義抽象的 Port 介面，交由各微服務的 Infrastructure Layer 實作 Adapter，貫徹依賴反轉原則 (DIP)。
