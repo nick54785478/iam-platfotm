@@ -59,11 +59,11 @@ public class LocalDataInitializer implements ApplicationRunner {
 
 		try {
 			/*
-			 *  🧑‍💼 步驟 A：建立超級管理員帳號 (Trigger UserCreatedEvent)
+			 *  步驟 A：建立超級管理員帳號 (Trigger UserCreatedEvent)
 			 */
 			log.info("👤 正在建立管理員帳號...");
 			CreateUserCommand createUserCommand = new CreateUserCommand("V-NICK.GH.ZHANG", "password123",
-					"V-NICK.GH.ZHANG@deltaww.com");
+					"V-NICK.GH.ZHANG@example.com");
 			boolean exist = userRepository.existsByTenantIdAndUsername(TenantContext.getCurrentTenantId(), createUserCommand.username());
 			if (exist) {
 				return;

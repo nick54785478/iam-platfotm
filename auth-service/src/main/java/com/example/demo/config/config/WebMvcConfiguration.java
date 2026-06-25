@@ -29,10 +29,10 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(tenantInterceptor)
-				// 🚀 雷達全開：強行保護所有以 /api/ 開頭的商務接口、管理接口與 CQRS 查詢讀寫端
+				// 雷達全開：強行保護所有以 /api/ 開頭的商務接口、管理接口與 CQRS 查詢讀寫端
 				.addPathPatterns("/api/**")
 
-				// 🟢 綠色通道放行：排除不需要租戶標籤的公共匿名訪問（如全局系統登入、靜態驗證碼、健康檢查介面）
+				// 綠色通道放行：排除不需要租戶標籤的公共匿名訪問（如全局系統登入、靜態驗證碼、健康檢查介面）
 				.excludePathPatterns("/api/public/**", "/api/auth/login",
 						"/api/auth/register",
 						"/actuator/**", // 放行 Prometheus 刮取資料

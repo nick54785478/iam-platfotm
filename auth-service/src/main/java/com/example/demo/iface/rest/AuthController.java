@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
 	private final AuthCommandService authCommandService;
-	private final UserRegisterCommandService userRegisterCommandService; // 🚀 注入註冊大腦
+	private final UserRegisterCommandService userRegisterCommandService; // 注入註冊大腦
 
 	public AuthController(AuthCommandService authCommandService,
 			UserRegisterCommandService userRegisterCommandService) {

@@ -1,6 +1,7 @@
 package com.example.demo.application.service;
 
 import com.example.demo.application.domain.role.aggregate.Role;
+import com.example.demo.application.domain.role.aggregate.vo.Permission;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.port.PasswordEncoderPort;
@@ -33,19 +34,10 @@ public class TenantOnboardingCommandService {
 
     private static final String TENANT_ROOT_ROLE_CODE = "TENANT_ROOT_ADMIN";
     private static final String TENANT_ROOT_ROLE_NAME = "租戶超級管理員";
-    private String tenantId;
 
-    /**
-     * 執行租戶的初始安全矩陣建立
-     *
-     * @param tenantId      租戶 ID
-     * @param rootEmail     預設管理員信箱 (同時作為 Username)
-     * @param plainPassword 預設明碼密碼
-     */
     @Transactional
     public void initializeTenantRootSecurity(String tenantId, String rootEmail, String plainPassword) {
 
-        // 護城河防禦：非同步執行緒必須手動初始化多租戶上下文，否則底層 Adapter 將報錯
         TenantContext.setCurrentTenantId(tenantId);
 
         try {
@@ -54,7 +46,17 @@ public class TenantOnboardingCommandService {
             // ===================================================================
             Role rootRole = Role.createCustom(TENANT_ROOT_ROLE_NAME, TENANT_ROOT_ROLE_CODE);
 
-            // 寫入資料庫並自動拔出 RoleChangedEvent 封裝成 TenantEventEnvelope 發射
+            // 【架構核心】：賦予超級萬用字元權限
+            // 系統代碼 (systemCode) = "*", 權限代碼 (permissionCode) = "ADMIN_ALL"
+            // 這會在地端資料庫產生一筆 role_permission 紀錄，並在 JWT 裡化作 "*:ADMIN_ALL"
+            Permission superAdminPermission = new Permission(
+                    "*",                  // 萬用系統代碼
+                    "ADMIN_ALL",          // 萬用權限代碼
+                    "系統最高萬用權限"      // 權限描述名稱 (滿足 Record 的非空防呆)
+            );
+
+            // 呼叫聚合根的業務方法
+            rootRole.assignPermission(superAdminPermission);
             roleWriterPort.save(rootRole);
             RoleId rootRoleId = rootRole.getId();
 
@@ -64,26 +66,18 @@ public class TenantOnboardingCommandService {
             String encryptedPassword = passwordEncoder.encode(plainPassword);
             User rootAdmin = User.createNew(rootEmail, encryptedPassword, rootEmail);
 
-            // 物理綁定角色 ID
             rootAdmin.assignRole(rootRoleId);
 
             // ===================================================================
-            // 3. CQRS 雙軌制視圖投影擴充 (解決 View 端需要看 RoleCode 的問題)
+            // 3. CQRS 雙軌制視圖投影擴充
             // ===================================================================
-            // 呼叫 Port 提供的高效能批次翻譯規格，將 UUID 翻譯成人類可讀的 RoleCode
             Set<String> roleCodes = roleWriterPort.findRoleCodesByRoleIds(rootAdmin.getAssignedRoles());
-
-            // 🚀 將完整的 RoleCode 灌回 User，產生完全體的 View Event
             rootAdmin.confirmRoleAssignmentsForView(roleCodes);
-
-            // 寫入資料庫並由 Adapter 統一發射所有 DomainEvent
             userWriterPort.save(rootAdmin);
 
-            log.info("[Auth-Application] 成功為租戶 {} 建立 Root Admin 帳號 ({}) 與角色 ({})。",
-                    tenantId, rootEmail, TENANT_ROOT_ROLE_CODE);
+            log.info("[Auth-Application] 成功為租戶 {} 建立 Root Admin 帳號，並掛載萬用字元權限。", tenantId);
 
         } finally {
-            // 極限天坑排除：無論成功或拋出異常，必須清理 ThreadLocal 防止記憶體洩漏與後續請求污染
             TenantContext.clear();
         }
     }

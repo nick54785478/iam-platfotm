@@ -14,7 +14,18 @@ public record AccountInfo(String username, String encryptedPassword, String emai
 	/**
 	 * 緊湊建構式：在創建時同步進行強固的邊界條件校驗（Guard Clauses）
 	 */
-	public AccountInfo{if(username==null||username.isBlank()){throw new IllegalArgumentException("Username cannot be empty");}if(encryptedPassword==null||encryptedPassword.isBlank()){throw new IllegalArgumentException("Password cannot be empty");}if(email==null||!email.contains("@")){throw new IllegalArgumentException("Invalid email format");}}
+	public AccountInfo{
+		if(username==null||username.isBlank()){throw new IllegalArgumentException("Username cannot be empty");
+		}
+
+		if(encryptedPassword==null||encryptedPassword.isBlank()){
+			throw new IllegalArgumentException("Password cannot be empty");
+		}
+
+		if(email==null||!email.contains("@")){
+			throw new IllegalArgumentException("Invalid email format");
+		}
+	}
 
 	/**
 	 * <b>【不可變變更行為】更換密碼</b>

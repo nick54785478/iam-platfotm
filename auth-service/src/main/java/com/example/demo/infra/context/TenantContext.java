@@ -17,7 +17,7 @@ package com.example.demo.infra.context;
 public final class TenantContext {
 
 	/**
-	 * * 核心隔離容器：以 ThreadLocal 守護每個 HTTP 請求執行緒獨立的租戶標籤
+	 * 核心隔離容器：以 ThreadLocal 守護每個 HTTP 請求執行緒獨立的租戶標籤
 	 */
 	private static final ThreadLocal<String> CURRENT_TENANT = new ThreadLocal<>();
 
@@ -41,7 +41,7 @@ public final class TenantContext {
 	/**
 	 * <b>動態設定當前執行緒的租戶識別碼</b>
 	 * <p>
-	 * ⚠️ 僅限最外圈的安全攔截器（TenantInterceptor）或非同步異步線程處理器在入口端調用。
+	 * 僅限最外圈的安全攔截器（TenantInterceptor）或非同步異步線程處理器在入口端調用。
 	 * </p>
 	 */
 	public static void setCurrentTenantId(String tenantId) {
@@ -49,7 +49,7 @@ public final class TenantContext {
 	}
 
 	/**
-	 * <b>⚠️ 極度重要：強制清空當前執行緒的租戶狀態</b>
+	 * <b>極度重要：強制清空當前執行緒的租戶狀態</b>
 	 * <p>
 	 * 當整個 HTTP 請求完全結束、TCP 準備放回執行緒池前，必須被死死調用， 徹底拔除 ThreadLocal
 	 * 中的內存引用，防禦記憶體洩漏與跨租戶數據污染地雷。

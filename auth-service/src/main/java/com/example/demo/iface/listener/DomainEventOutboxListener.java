@@ -35,11 +35,14 @@ public class DomainEventOutboxListener {
 	}
 
 	/**
-	 * 攔截包裹了多租戶信封的領域事件。 ⚠️ 注意：此處執行在【主業務請求執行緒】，一旦本方法序列化或資料庫 save 噴錯，
+	 * 攔截包裹了多租戶信封的領域事件。
+	 *<pre>
+	 * 注意：此處執行在【主業務請求執行緒】，一旦本方法序列化或資料庫 save 噴錯，
 	 * 前面的使用者、角色變更將會「連帶強制 Rollback」，確保兩者高度的 ACID 一致性。
+	 *</pre>
 	 */
 	@EventListener
-	@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT) // 🚀 核心防線：主事務提交前的命運共同體
+	@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT) // 核心防線：主事務提交前的命運共同體
 	public void onTenantDomainEvent(TenantEventEnvelope envelope) {
 		try {
 			DomainEvent domainEvent = envelope.event();
