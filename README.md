@@ -37,9 +37,16 @@
 * 核心快取與限流：Redis 7.0 專職負責網關令牌快取、分散式限流與狀態高速暫存。
 
 * 物理持久化：PostgreSQL 15，各微服務採獨立資料庫 Schema 隔離，全面阻斷跨庫強關聯耦合。
+* 
 
 
 ## 微服務組件深度剖析 (Microservices Breakdown)
+
+**Shared Kernel (共用安全基礎設施)**
+作為全域的技術防禦標準，以獨立二進位套件 (JAR) 形式發佈，各微服務皆須引入。
+>* **嚴格依賴反轉 (DIP)**：內部絕不包含任何 JPA Entity 或具體資料庫 Schema。僅定義 RuleCacheManagerPort 與 ApiResourceRuleQueryRepositoryPort 等抽象輸出埠，
+>* **雙軌聯防動態權限 (Dual-Track Authz)**：內建 PermissionGuardInterceptor，第一軌支援 @RequiresPermission 硬編碼中斷；第二軌透過 Redis Cache-Aside 引擎進行 $O(1)$ 複雜 AntPath 路徑與租戶客製化規則的動態降維比對。
+
 
 **1. Spring Cloud Gateway (全域流量網關)**
 作為整個微服務叢集的唯一入口，定位為「無狀態、高效能流量調度與安全護城河」。
@@ -229,23 +236,27 @@
         class TS_DB,DS_DB,AS_DB db;
         class EventBus kafka;
 
-## 啟動專案
+## 啟動與安裝指南
 
-### 引入 Shared Kernel
+### 建置 Shared Kernel (本地環境發佈)
+系統的核心安全防護網 shared-kernel 採獨立二進位發佈模式。初次建置或代碼異動時，請遵循以下步驟：
 
-**1. 開啟 Maven 執行以下指令:**
+**1. 執行本地 Maven 安裝指令:**
 
+在 shared-kernel 的專案根目錄下執行：
   ```
    mvn clean install
   ``` 
 
-**說明:** 
+**機制說明:** 
 
 > Maven 會在你的本地使用者目錄下（Windows 通常在 C:\Users\您的用戶名\.m2\repository\，Mac/Linux 在 ~/.m2/repository/），
 > 自動建立對應的資料夾結構： ~/.m2/repository/com/example/iam/shared-kernel/1.0.0-SNAPSHOT/ 
 > 並把編譯好的 shared-kernel-1.0.0-SNAPSHOT.jar 放進去。
 
-**2. 引入至其他獨立微服務專案**
+**2. 微服務專案引入依賴：**
+
+在 AuthService 或 DeptTreeService 的 pom.xml 中加入以下依賴，微服務在編譯時便會自動向本地儲存庫載入此防禦核心：
 
 在 pom.xml 加入以下依賴:
 
