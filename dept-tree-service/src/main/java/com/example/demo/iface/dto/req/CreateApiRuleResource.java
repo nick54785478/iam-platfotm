@@ -1,8 +1,7 @@
-package com.example.demo.application.shared.command.inbound;
+package com.example.demo.iface.dto.req;
 
 // 指令 DTO (Record)
-public record CreateApiRuleCommand(
-        String tenantId,
+public record CreateApiRuleResource(
         String httpMethod,
         String pathPattern,
         String requiredPermission,

@@ -9,6 +9,7 @@ import com.example.demo.infra.apirule.ApiResourceRule;
 import com.example.demo.infra.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,53 +31,53 @@ public class ApiResourceRuleCommandService {
 
     @Transactional
     public Long createRule(CreateApiRuleCommand cmd) {
+
+        // 優先使用 Command 傳遞的 TenantId，若無則預設為 "SYSTEM"
+        String currentTenant = (cmd.tenantId() != null && !cmd.tenantId().isBlank())
+                ? cmd.tenantId()
+                : "SYSTEM";
+
+
+        // 將 currentTenant 傳入工廠方法
         ApiResourceRule newRule = ApiResourceRule.createNew(
-                cmd.httpMethod(), cmd.pathPattern(), cmd.requiredPermission(), cmd.priority()
+                currentTenant, cmd.httpMethod(), cmd.pathPattern(), cmd.requiredPermission(), cmd.priority()
         );
         writerPort.save(newRule);
 
-        log.info("[Authz-Admin] 成功新增 API 保護規則: {} {}", cmd.httpMethod(), cmd.pathPattern());
-
-        // 獲取當前操作的租戶上下文 (若是平台管理員，可能是 "PLATFORM")
-        String currentTenant = TenantContext.getCurrentTenantId();
-
-        // 透過靜態工廠發布整合事件
         eventPublisher.publishEvent(ApiRuleChangedEvent.of(currentTenant, "CREATE", newRule.getId()));
-
         return newRule.getId();
     }
 
     @Transactional
     public void updateRule(UpdateApiRuleCommand cmd) {
-        ApiResourceRule rule = writerPort.findById(cmd.ruleId())
-                .orElseThrow(() -> new IllegalArgumentException("找不到該 API 規則: " + cmd.ruleId()));
+
+        // IDOR 終極防禦：用 ID + TenantId 雙重條件撈取實體！
+        ApiResourceRule rule = writerPort.findByIdAndTenantId(cmd.ruleId(), cmd.tenantId())
+                .orElseThrow(() -> new IllegalArgumentException("找不到該 API 規則，或您無權修改此租戶的資源: " + cmd.ruleId()));
 
         rule.update(cmd.httpMethod(), cmd.pathPattern(), cmd.requiredPermission(), cmd.priority());
         writerPort.save(rule);
 
-        log.info("[Authz-Admin] 成功更新 API 保護規則 ID: {}", cmd.ruleId());
+        log.info("[Authz-Admin] 成功更新 API 保護規則 ID: {} (租戶: {})", cmd.ruleId(), cmd.tenantId());
 
-        // 補齊：獲取當前租戶上下文
-        String currentTenant = TenantContext.getCurrentTenantId();
-
-        // 修正：改用靜態工廠發布整合事件，確保 payload 結構對齊
-        eventPublisher.publishEvent(ApiRuleChangedEvent.of(currentTenant, "UPDATE", rule.getId()));
+        // 發布整合事件 (確保帶入正確的 TenantId)
+        eventPublisher.publishEvent(ApiRuleChangedEvent.of(cmd.tenantId(), "UPDATE", rule.getId()));
     }
 
     @Transactional
-    public void toggleRuleStatus(Long ruleId, boolean isActive) {
-        ApiResourceRule rule = writerPort.findById(ruleId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到該 API 規則: " + ruleId));
+    public void toggleRuleStatus(String tenantId, Long ruleId, boolean isActive, String operator) {
+
+        // IDOR 終極防禦
+        ApiResourceRule rule = writerPort.findByIdAndTenantId(ruleId, tenantId)
+                .orElseThrow(() -> new IllegalArgumentException("找不到該 API 規則，或您無權修改此租戶的資源: " + ruleId));
 
         rule.toggleActiveStatus(isActive);
+        // 如果實體有實作 updatedBy，也可以在這裡呼叫 rule.setUpdatedBy(operator)
         writerPort.save(rule);
 
-        log.info("[Authz-Admin] API 規則 ID: {} 狀態已變更為: {}", ruleId, isActive ? "啟用" : "停用");
+        log.info("[Authz-Admin] API 規則 ID: {} 狀態已變更為: {} (租戶: {})", ruleId, isActive ? "啟用" : "停用", tenantId);
 
-        // 🚀 補齊：獲取當前租戶上下文
-        String currentTenant = TenantContext.getCurrentTenantId();
-
-        // 🚀 修正：改用靜態工廠發布整合事件，確保 payload 結構對齊
-        eventPublisher.publishEvent(ApiRuleChangedEvent.of(currentTenant, "TOGGLE", rule.getId()));
+        // 發布整合事件
+        eventPublisher.publishEvent(ApiRuleChangedEvent.of(tenantId, "TOGGLE", rule.getId()));
     }
 }

@@ -16,8 +16,8 @@ public class ApiResourceRuleWriterAdapter implements ApiResourceRuleWriterPort {
     private final ApiResourceRulePersistence jpaRepository;
 
     @Override
-    public Optional<ApiResourceRule> findById(Long id) {
-        return jpaRepository.findById(id);
+    public Optional<ApiResourceRule> findByIdAndTenantId(Long id, String tenantId) {
+        return jpaRepository.findByIdAndTenantId(id, tenantId);
     }
 
     @Override

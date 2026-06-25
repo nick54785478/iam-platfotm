@@ -9,7 +9,7 @@ import java.util.Optional;
  */
 public interface ApiResourceRuleWriterPort {
 
-    Optional<ApiResourceRule> findById(Long id);
+    Optional<ApiResourceRule> findByIdAndTenantId(Long id, String tenantId);
 
     void save(ApiResourceRule rule);
 

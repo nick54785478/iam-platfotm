@@ -1,6 +1,7 @@
 package com.example.demo.iface.interceptor;
 
 import com.example.demo.infra.context.TenantContext;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
