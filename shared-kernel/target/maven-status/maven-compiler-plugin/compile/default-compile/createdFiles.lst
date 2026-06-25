@@ -1,0 +1,6 @@
+security\service\DynamicRuleQueryService.class
+security\port\ApiResourceRuleQueryRepositoryPort.class
+security\port\RuleCacheManagerPort.class
+security\dto\ApiResourceRuleGottenResult.class
+security\interceptor\PermissionGuardInterceptor.class
+security\annotation\RequiresPermission.class

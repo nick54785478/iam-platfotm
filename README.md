@@ -228,3 +228,33 @@
         class TS,DS,AS service;
         class TS_DB,DS_DB,AS_DB db;
         class EventBus kafka;
+
+## 啟動專案
+
+### 引入 Shared Kernel
+
+**1. 開啟 Maven 執行以下指令:**
+
+  ```
+   mvn clean install
+  ``` 
+
+**說明:** 
+
+> Maven 會在你的本地使用者目錄下（Windows 通常在 C:\Users\您的用戶名\.m2\repository\，Mac/Linux 在 ~/.m2/repository/），
+> 自動建立對應的資料夾結構： ~/.m2/repository/com/example/iam/shared-kernel/1.0.0-SNAPSHOT/ 
+> 並把編譯好的 shared-kernel-1.0.0-SNAPSHOT.jar 放進去。
+
+**2. 引入至其他獨立微服務專案**
+
+在 pom.xml 加入以下依賴:
+
+```
+<dependency>
+    <groupId>com.example.iam</groupId>
+    <artifactId>shared-kernel</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+</dependency>
+```
+
+當微服務執行編譯時，Maven 會優先去電腦的 ~/.m2/repository 裡面撈取這個 JAR 包，直接無縫載入。

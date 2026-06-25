@@ -1,0 +1,6 @@
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\annotation\RequiresPermission.java
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\dto\ApiResourceRuleGottenResult.java
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\interceptor\PermissionGuardInterceptor.java
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\port\ApiResourceRuleQueryRepositoryPort.java
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\port\RuleCacheManagerPort.java
+D:\桌面\MonoRepository\iam-platform\shared-kernel\src\main\java\security\service\DynamicRuleQueryService.java
