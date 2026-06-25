@@ -8,9 +8,14 @@ import security.port.RuleCacheManagerPort;
 import java.time.Duration;
 import java.util.Set;
 
+/**
+ * 實作 API Resource Rule 快取管理類
+ *
+ * <p>實作 Shared Kernel 的 RuleCacheManagerPort</p>
+ */
 @Component
 @RequiredArgsConstructor
-public class RuleCacheManagerAdapter implements RuleCacheManagerPort {
+class RuleCacheManagerAdapter implements RuleCacheManagerPort {
 
     private final StringRedisTemplate redisTemplate;
 
