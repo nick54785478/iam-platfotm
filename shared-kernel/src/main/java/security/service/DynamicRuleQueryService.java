@@ -1,18 +1,16 @@
 package security.service;
 
 
-import security.dto.ApiResourceRuleGottenResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
+import security.dto.ApiResourceRuleGottenResult;
 import security.port.ApiResourceRuleQueryRepositoryPort;
 import security.port.RuleCacheManagerPort;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <h2>[應用層] 動態 API 資源權限查詢服務 (支援多租戶覆寫)</h2>
