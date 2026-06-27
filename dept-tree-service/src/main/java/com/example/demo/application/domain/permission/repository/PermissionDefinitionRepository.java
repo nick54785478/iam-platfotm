@@ -25,7 +25,7 @@ public interface PermissionDefinitionRepository {
 
     /**
      * 透過租戶 ID 與權限代碼精準尋找權限
-     * <p>💡 <b>領域知識：</b> 在同一個租戶下，PermissionCode 具備絕對唯一性約束。</p>
+     * <p><b>領域知識：</b> 在同一個租戶下，PermissionCode 具備絕對唯一性約束。</p>
      *
      * @param tenantId 租戶識別值物件
      * @param code     權限代碼值物件
@@ -40,7 +40,7 @@ public interface PermissionDefinitionRepository {
 
     /**
      * 儲存權限聚合根的最新狀態。
-     * <p>⚠️ <b>事件驅動核心：</b> 此方法執行時，底層應負責連帶將聚合根內累積的 DomainEvent 派發至 Spring Event Bus。</p>
+     * <p><b>事件驅動核心：</b> 此方法執行時，底層應負責連帶將聚合根內累積的 DomainEvent 派發至 Spring Event Bus。</p>
      */
     PermissionDefinition save(PermissionDefinition permissionDefinition);
 }

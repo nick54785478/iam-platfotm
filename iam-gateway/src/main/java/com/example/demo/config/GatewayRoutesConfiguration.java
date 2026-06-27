@@ -66,7 +66,8 @@ public class GatewayRoutesConfiguration {
 				.and(route("auth-admin-route")
 						.route(path("/api/users/**")
 								.or(path("/api/roles/**"))
-								.or(path("/api/groups/**")), http())
+								.or(path("/api/groups/**"))
+								.or(path("/api/permissions/**")), http())
 						// 💡 已將路由 ID 修正為 "auth-admin"，避免與 Dept 服務共用流量桶
 						.filter(rateLimitFactory.ipRateLimiter("auth-admin", 2, 10))
 						// SCG WebMVC 最新寫法：直接傳入 (斷路器實例 ID, 降級轉發 URI)

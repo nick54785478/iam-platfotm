@@ -31,7 +31,6 @@ public class UserPermissionQueryService {
 		this.userReaderPort = userReaderPort;
 		this.groupReaderPort = groupReaderPort;
 		this.roleReaderPort = roleReaderPort;
-		// 🚀 舒服！因為外圈 Adapter 幫我們做完了反序列化，這裡連 ObjectMapper 都不需要注入了！
 	}
 
 	public UserPermissionContextRepresentation getUserPermissionContext(String username) {
