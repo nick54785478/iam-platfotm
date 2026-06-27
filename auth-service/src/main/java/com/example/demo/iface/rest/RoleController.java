@@ -25,8 +25,6 @@ public class RoleController {
 
 	private final RoleCommandService roleCommandService;
 	private final RoleQueryService roleQueryService;
-	private RoleRepresentation data;
-	private List<RoleRepresentation> data1;
 
 	public RoleController(RoleCommandService roleCommandService, RoleQueryService roleQueryService) {
 		this.roleCommandService = roleCommandService;

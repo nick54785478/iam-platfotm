@@ -110,7 +110,7 @@ public class Role {
 		}
 		this.roleName = newName;
 
-		// 🚀 狀態變更後，觸發全量狀態同步事件
+		// 狀態變更後，觸發全量狀態同步事件
 		this.registerEvent(this.toChangedEvent());
 	}
 
