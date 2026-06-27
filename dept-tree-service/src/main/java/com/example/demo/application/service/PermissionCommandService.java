@@ -31,16 +31,16 @@ public class PermissionCommandService {
      * <b>【核心業務】自動宣告或等冪覆蓋更新權限字典</b>
      *
      * @param tenantIdStr 多租戶識別碼字串
-     * @param cmd         包含權限屬性的 Command DTO
+     * @param command         包含權限屬性的 Command DTO
      * @param operator    操作者 ID (供 Audit Trail 使用)
      * @return 權限聚合根唯一識別碼
      */
     @Transactional
-    public String definePermission(String tenantIdStr, DefinePermissionCommand cmd, String operator) {
+    public String definePermission(String tenantIdStr, DefinePermissionCommand command, String operator) {
 
         // 1. 邊界防禦：強型別 VO 轉換，格式錯誤首秒擊落
         TenantId tenantId = new TenantId(tenantIdStr);
-        PermissionCode code = new PermissionCode(cmd.code());
+        PermissionCode code = new PermissionCode(command.code());
 
         // 2. 業務防護：改採 Optional 探測，實作高度容錯的動態自癒 (Upsert) 語意
         Optional<PermissionDefinition> existingOpt = repository.findByTenantIdAndCode(tenantId, code);
@@ -48,7 +48,7 @@ public class PermissionCommandService {
         if (existingOpt.isPresent()) {
             // 【等冪覆蓋】：若權限代碼已存在，視為一次「更名與描述微調上報」
             PermissionDefinition existingPermission = existingOpt.get();
-            existingPermission.updateDetails(cmd.name(), cmd.description(), cmd.module(), operator);
+            existingPermission.updateDetails(command.name(), command.description(), command.module(), operator);
 
             repository.save(existingPermission);
             log.debug("[Permission-Command] 權限 {} 已存在，順暢執行等冪細節更新並廣播 UpdatedEvent", code.getValue());
@@ -57,7 +57,7 @@ public class PermissionCommandService {
 
         // 3. 全新宣告：透過領域工廠建立滿血實體 (內部自動 raise CreatedEvent)
         PermissionDefinition newPermission = PermissionDefinition.declare(
-                tenantId, code, cmd.name(), cmd.description(), cmd.module(), operator
+                tenantId, code, command.name(), command.description(), command.module(), operator
         );
 
         // 4. 持久化 (無縫驅動 Spring @DomainEvents 寫入本地 Outbox)
