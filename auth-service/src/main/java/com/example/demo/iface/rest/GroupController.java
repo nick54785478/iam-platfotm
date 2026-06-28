@@ -32,7 +32,6 @@ public class GroupController {
 
 	private final GroupCommandService groupCommandService;
 	private final GroupQueryService groupQueryService;
-	private GroupRepresentation groupRepresentation;
 
 	public GroupController(GroupCommandService groupCommandService, GroupQueryService groupQueryService) {
 		this.groupCommandService = groupCommandService;
@@ -65,7 +64,6 @@ public class GroupController {
 	 */
 	@PutMapping("/{groupCode}/name")
 	public ResponseEntity<GroupResponse.GroupRenamedResource> renameGroup(@PathVariable String groupCode, @RequestBody GroupRequest.RenameGroupResource resource) {
-
 		groupCommandService.renameGroup(groupCode, resource.newName());
 		return new ResponseEntity<>(new GroupResponse.GroupRenamedResource("200","群組更名成功"), HttpStatus.OK); // 204 No Content
 	}
@@ -88,7 +86,7 @@ public class GroupController {
 	}
 
 	/**
-	 * <b>🚀 將指定使用者移出特定群組 (Remove Group Member)</b>
+	 * <b>將指定使用者移出特定群組 (Remove Group Member)</b>
 	 * <p>
 	 * <b>HTTP 語意：</b> {@code DELETE /api/groups/{groupCode}/members/{username}}
 	 * </p>

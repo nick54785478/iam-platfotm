@@ -61,7 +61,7 @@ public class LocalDataInitializer implements ApplicationRunner {
 			/*
 			 *  步驟 A：建立超級管理員帳號 (Trigger UserCreatedEvent)
 			 */
-			log.info("👤 正在建立管理員帳號...");
+			log.info("正在建立管理員帳號...");
 			CreateUserCommand createUserCommand = new CreateUserCommand("V-NICK.GH.ZHANG", "password123",
 					"V-NICK.GH.ZHANG@example.com");
 			boolean exist = userRepository.existsByTenantIdAndUsername(TenantContext.getCurrentTenantId(), createUserCommand.username());
@@ -82,15 +82,15 @@ public class LocalDataInitializer implements ApplicationRunner {
 			 * ========================================== 🔗 步驟 C：完成關聯綁定
 			 * ==========================================
 			 */
-			log.info("🔗 正在將 ADMIN 角色綁定至使用者...");
+			log.info("正在將 ADMIN 角色綁定至使用者...");
 			userCommandService.assignRoleToUser("V-NICK.GH.ZHANG", "ADMIN");
 
-			log.info("====== ✅ 初始化完成！相關的 Domain Events 已成功寫入 Outbox 準備派發！ ======");
-			log.info("👉 測試帳號：V-NICK.GH.ZHANG / password123 (具備 ADMIN_ALL 最高權限)");
-			log.info("👉 租戶空間：WPG");
+			log.info("====== 初始化完成！相關的 Domain Events 已成功寫入 Outbox 準備派發！ ======");
+			log.info("測試帳號：V-NICK.GH.ZHANG / password123 (具備 ADMIN_ALL 最高權限)");
+			log.info("租戶空間：WPG");
 
 		} catch (Exception e) {
-			log.error("❌ 測試資料初始化失敗，事務已 Rollback: {}", e.getMessage(), e);
+			log.error("測試資料初始化失敗，事務已 Rollback: {}", e.getMessage(), e);
 			throw e; // 拋出異常以觸發 @Transactional Rollback
 		} finally {
 			// 3. 安全斷電 (Context Cleanup)：清理 ThreadLocal

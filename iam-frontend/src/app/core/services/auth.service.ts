@@ -18,6 +18,7 @@ export interface UserPermissionContext {
 }
 
 export interface UserRepresentation {
+  id?: string;
   username: string;
   email: string;
   status: string;
@@ -25,6 +26,7 @@ export interface UserRepresentation {
 }
 
 export interface RoleRepresentation {
+  id?: string;
   roleCode: string;
   roleName: string;
   permissions: Array<{
@@ -37,8 +39,8 @@ export interface RoleRepresentation {
 export interface GroupRepresentation {
   groupCode: string;
   groupName: string;
-  members: string[];
-  roles: string[];
+  memberUserIds?: string[];
+  assignedRoleIds?: string[];
 }
 
 @Injectable({

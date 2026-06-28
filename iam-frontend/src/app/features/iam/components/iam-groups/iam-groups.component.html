@@ -19,9 +19,9 @@
         <tr>
           <td><code>{{ grp.groupCode }}</code></td>
           <td>{{ grp.groupName }}</td>
-          <td>{{ grp.members?.length || 0 }} members</td>
+          <td>{{ grp.memberUserIds?.length || 0 }} members</td>
           <td>
-            <span *ngFor="let r of grp.roles" class="mini-badge purple">{{ r }}</span>
+            <span *ngFor="let r of grp.assignedRoleIds" class="mini-badge purple">{{ getRoleCodeById(r) }}</span>
           </td>
           <td>
             <div class="action-buttons">
@@ -64,8 +64,8 @@
     <div class="sub-col">
       <h4>Members</h4>
       <div class="member-list">
-        <div *ngFor="let m of selectedGroup()?.members" class="member-item">
-          <code>{{ m }}</code>
+        <div *ngFor="let m of selectedGroup()?.memberUserIds" class="member-item">
+          <code>{{ getUsernameById(m) }}</code>
           <button (click)="onRemoveMemberFromGroup(m)" class="mini-btn danger" title="Remove Member">×</button>
         </div>
       </div>
@@ -83,8 +83,8 @@
     <div class="sub-col">
       <h4>Group Roles</h4>
       <div class="member-list">
-        <div *ngFor="let r of selectedGroup()?.roles" class="member-item">
-          <span class="mini-badge purple">{{ r }}</span>
+        <div *ngFor="let r of selectedGroup()?.assignedRoleIds" class="member-item">
+          <span class="mini-badge purple">{{ getRoleCodeById(r) }}</span>
           <button (click)="onRevokeRoleFromGroup(r)" class="mini-btn danger" title="Revoke Role">×</button>
         </div>
       </div>

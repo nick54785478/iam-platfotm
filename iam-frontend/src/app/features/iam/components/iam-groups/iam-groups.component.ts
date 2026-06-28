@@ -64,6 +64,22 @@ export class IamGroupsComponent implements OnInit {
     });
   }
 
+  getUsernameById(idOrName: string): string {
+    const userById = this.users().find(u => u.id === idOrName);
+    if (userById) return userById.username;
+    const userByName = this.users().find(u => u.username === idOrName);
+    if (userByName) return userByName.username;
+    return idOrName;
+  }
+
+  getRoleCodeById(idOrCode: string): string {
+    const roleById = this.roles().find(r => r.id === idOrCode);
+    if (roleById) return roleById.roleCode;
+    const roleByCode = this.roles().find(r => r.roleCode === idOrCode);
+    if (roleByCode) return roleByCode.roleCode;
+    return idOrCode;
+  }
+
   // --- Groups Handlers ---
   openAddGroupModal(): void {
     this.showAddGroupModal.set(true);
@@ -81,8 +97,8 @@ export class IamGroupsComponent implements OnInit {
         this.groups.set([...this.groups(), {
           groupCode: this.newGroupCode.toUpperCase(),
           groupName: this.newGroupName,
-          members: [],
-          roles: []
+          memberUserIds: [],
+          assignedRoleIds: []
         }]);
         this.closeModals();
       }
@@ -101,30 +117,57 @@ export class IamGroupsComponent implements OnInit {
   onAddMemberToGroup(): void {
     const grp = this.selectedGroup();
     if (grp && this.userToAddGroup) {
-      this.authService.addMemberToGroup(grp.groupCode, this.userToAddGroup).subscribe({
+      const userToAdd = this.userToAddGroup;
+      const userObj = this.users().find(u => u.username === userToAdd);
+      const idToStore = userObj?.id || userToAdd;
+      
+      // Optimistic UI Update & Reset Dropdown
+      const updatedGrp = { ...grp, memberUserIds: Array.from(new Set([...(grp.memberUserIds || []), idToStore])) };
+      this.selectedGroup.set(updatedGrp);
+      this.updateGroupInList(updatedGrp);
+      this.userToAddGroup = '';
+
+      this.authService.addMemberToGroup(grp.groupCode, userToAdd).subscribe({
         next: () => {
-          this.refreshSelectedGroup(grp.groupCode);
+          // Try to fetch latest, but merge with our optimistic state in case backend is lagging
+          this.authService.getGroupDetails(grp.groupCode).subscribe(res => {
+            if (res?.data) {
+              const freshGrp = { ...res.data, memberUserIds: Array.from(new Set([...(res.data.memberUserIds || []), ...updatedGrp.memberUserIds])) };
+              this.selectedGroup.set(freshGrp);
+              this.updateGroupInList(freshGrp);
+            }
+          });
         },
         error: () => {
-          const updatedGrp = { ...grp, members: [...(grp.members || []), this.userToAddGroup] };
-          this.selectedGroup.set(updatedGrp);
-          this.updateGroupInList(updatedGrp);
+          // Keep optimistic update on error for demo purposes
         }
       });
     }
   }
 
-  onRemoveMemberFromGroup(username: string): void {
+  onRemoveMemberFromGroup(m: string): void {
     const grp = this.selectedGroup();
     if (grp) {
+      const username = this.getUsernameById(m);
+
+      // Optimistic UI Update
+      const updatedGrp = { ...grp, memberUserIds: (grp.memberUserIds || []).filter(x => x !== m) };
+      this.selectedGroup.set(updatedGrp);
+      this.updateGroupInList(updatedGrp);
+
       this.authService.removeMemberFromGroup(grp.groupCode, username).subscribe({
         next: () => {
-          this.refreshSelectedGroup(grp.groupCode);
+          // Try to fetch latest, but ensure the removed member stays removed in case backend is lagging
+          this.authService.getGroupDetails(grp.groupCode).subscribe(res => {
+            if (res?.data) {
+              const freshGrp = { ...res.data, memberUserIds: (res.data.memberUserIds || []).filter(x => x !== m) };
+              this.selectedGroup.set(freshGrp);
+              this.updateGroupInList(freshGrp);
+            }
+          });
         },
         error: () => {
-          const updatedGrp = { ...grp, members: (grp.members || []).filter(m => m !== username) };
-          this.selectedGroup.set(updatedGrp);
-          this.updateGroupInList(updatedGrp);
+          // Keep optimistic update on error
         }
       });
     }
@@ -133,30 +176,57 @@ export class IamGroupsComponent implements OnInit {
   onAssignRoleToGroup(): void {
     const grp = this.selectedGroup();
     if (grp && this.roleToAddGroup) {
-      this.authService.assignRoleToGroup(grp.groupCode, this.roleToAddGroup).subscribe({
+      const roleToAdd = this.roleToAddGroup;
+      const roleObj = this.roles().find(r => r.roleCode === roleToAdd);
+      const idToStore = roleObj?.id || roleToAdd;
+
+      // Optimistic UI Update & Reset Dropdown
+      const updatedGrp = { ...grp, assignedRoleIds: Array.from(new Set([...(grp.assignedRoleIds || []), idToStore])) };
+      this.selectedGroup.set(updatedGrp);
+      this.updateGroupInList(updatedGrp);
+      this.roleToAddGroup = '';
+
+      this.authService.assignRoleToGroup(grp.groupCode, roleToAdd).subscribe({
         next: () => {
-          this.refreshSelectedGroup(grp.groupCode);
+          // Try to fetch latest, but merge with our optimistic state in case backend is lagging
+          this.authService.getGroupDetails(grp.groupCode).subscribe(res => {
+            if (res?.data) {
+              const freshGrp = { ...res.data, assignedRoleIds: Array.from(new Set([...(res.data.assignedRoleIds || []), ...updatedGrp.assignedRoleIds])) };
+              this.selectedGroup.set(freshGrp);
+              this.updateGroupInList(freshGrp);
+            }
+          });
         },
         error: () => {
-          const updatedGrp = { ...grp, roles: [...(grp.roles || []), this.roleToAddGroup] };
-          this.selectedGroup.set(updatedGrp);
-          this.updateGroupInList(updatedGrp);
+          // Keep optimistic update on error
         }
       });
     }
   }
 
-  onRevokeRoleFromGroup(roleCode: string): void {
+  onRevokeRoleFromGroup(r: string): void {
     const grp = this.selectedGroup();
     if (grp) {
+      const roleCode = this.getRoleCodeById(r);
+
+      // Optimistic UI Update
+      const updatedGrp = { ...grp, assignedRoleIds: (grp.assignedRoleIds || []).filter(x => x !== r) };
+      this.selectedGroup.set(updatedGrp);
+      this.updateGroupInList(updatedGrp);
+
       this.authService.revokeRoleFromGroup(grp.groupCode, roleCode).subscribe({
         next: () => {
-          this.refreshSelectedGroup(grp.groupCode);
+          // Try to fetch latest, but ensure the revoked role stays revoked in case backend is lagging
+          this.authService.getGroupDetails(grp.groupCode).subscribe(res => {
+            if (res?.data) {
+              const freshGrp = { ...res.data, assignedRoleIds: (res.data.assignedRoleIds || []).filter(x => x !== r) };
+              this.selectedGroup.set(freshGrp);
+              this.updateGroupInList(freshGrp);
+            }
+          });
         },
         error: () => {
-          const updatedGrp = { ...grp, roles: (grp.roles || []).filter(r => r !== roleCode) };
-          this.selectedGroup.set(updatedGrp);
-          this.updateGroupInList(updatedGrp);
+          // Keep optimistic update on error
         }
       });
     }
@@ -182,8 +252,8 @@ export class IamGroupsComponent implements OnInit {
 
   private mockGroups(): GroupRepresentation[] {
     return [
-      { groupCode: 'DEPT_TECH', groupName: 'Tech Department Group', members: ['alex.zhang'], roles: ['DEVELOPER'] },
-      { groupCode: 'BOARD_DIRECTORS', groupName: 'Board of Directors', members: ['admin'], roles: ['ADMIN'] }
+      { groupCode: 'DEPT_TECH', groupName: 'Tech Department Group', memberUserIds: ['alex.zhang'], assignedRoleIds: ['DEVELOPER'] },
+      { groupCode: 'BOARD_DIRECTORS', groupName: 'Board of Directors', memberUserIds: ['admin'], assignedRoleIds: ['ADMIN'] }
     ];
   }
 }

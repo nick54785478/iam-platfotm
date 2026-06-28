@@ -34,7 +34,7 @@ export class IamRolesComponent implements OnInit {
 
   // Permission form
   permRoleTarget = signal<RoleRepresentation | null>(null);
-  newPermSys = 'DEPT_SERVICE';
+  newPermSys = 'auth-service';
   newPermCode = '';
   newPermName = '';
 
@@ -79,7 +79,7 @@ export class IamRolesComponent implements OnInit {
 
   openAssignPermModal(role: RoleRepresentation): void {
     this.permRoleTarget.set(role);
-    this.newPermSys = 'DEPT_SERVICE';
+    this.newPermSys = 'auth-service';
     this.newPermCode = '';
     this.newPermName = '';
   }
@@ -145,15 +145,15 @@ export class IamRolesComponent implements OnInit {
         roleCode: 'ADMIN',
         roleName: 'Tenant Enterprise Administrator',
         permissions: [
-          { systemCode: 'DEPT_SERVICE', permissionCode: 'DEPT_WRITE', permissionName: 'Modify Organization chart' },
-          { systemCode: 'AUTH_SERVICE', permissionCode: 'USER_WRITE', permissionName: 'Administer Tenant Users' }
+          { systemCode: 'dept-service', permissionCode: 'DEPT_WRITE', permissionName: 'Modify Organization chart' },
+          { systemCode: 'auth-service', permissionCode: 'USER_WRITE', permissionName: 'Administer Tenant Users' }
         ]
       },
       {
         roleCode: 'DEVELOPER',
         roleName: 'System Core Developer',
         permissions: [
-          { systemCode: 'DEPT_SERVICE', permissionCode: 'DEPT_READ', permissionName: 'Read organization structure' }
+          { systemCode: 'dept-service', permissionCode: 'DEPT_READ', permissionName: 'Read organization structure' }
         ]
       }
     ];
