@@ -1,0 +1,130 @@
+.list-section {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mini-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.mini-badge.purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Group Details Layout inside Modal */
+.group-details-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.sub-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sub-col h4 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.member-list {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 180px;
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.mini-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  width: 20px;
+  height: 20px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-btn.danger:hover {
+  background: var(--danger-glow, rgba(239, 68, 68, 0.5));
+  color: var(--danger, #ef4444);
+}
+
+.add-action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.form-input.mini {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+/* Fix input overflow and styling in modal */
+::ng-deep .glass-dialog .p-dialog-content {
+  overflow-x: hidden;
+}
+
+::ng-deep .p-inputtext {
+  width: 100%;
+  box-sizing: border-box !important;
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+
+::ng-deep .p-inputtext:focus {
+  border-color: var(--primary, #6366f1) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}

@@ -62,8 +62,24 @@
   gap: 15px;
 }
 
+.search-box {
+  position: relative;
+  display: inline-block;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .search-input {
   width: 260px;
+  padding-left: 38px !important;
 }
 
 .action-buttons {

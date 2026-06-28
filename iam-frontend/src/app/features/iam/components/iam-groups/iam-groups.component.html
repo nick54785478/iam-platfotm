@@ -1,0 +1,104 @@
+<div class="list-section glass-panel animate-fade-in">
+  <div class="section-header">
+    <h3>Authorization Groups</h3>
+    <p-button label="Create Group" icon="pi pi-plus" (click)="openAddGroupModal()"
+      styleClass="glow-button"></p-button>
+  </div>
+  <div class="table-container mt-4">
+    <p-table [value]="groups()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Group Code</th>
+          <th>Group Name</th>
+          <th>Members Count</th>
+          <th>Associated Roles</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-grp>
+        <tr>
+          <td><code>{{ grp.groupCode }}</code></td>
+          <td>{{ grp.groupName }}</td>
+          <td>{{ grp.members?.length || 0 }} members</td>
+          <td>
+            <span *ngFor="let r of grp.roles" class="mini-badge purple">{{ r }}</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button icon="pi pi-users" [rounded]="true" [text]="true" (click)="openGroupDetail(grp)"
+                title="Manage Members / Roles"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Create Group Modal -->
+<p-dialog header="Create Permission Group" [visible]="showAddGroupModal()" (visibleChange)="!$event && closeModals()"
+  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+  <form (ngSubmit)="onCreateGroup()" #groupForm="ngForm">
+    <div class="form-group p-fluid">
+      <label class="form-label">Group Code</label>
+      <input pInputText [(ngModel)]="newGroupCode" name="newGroupCode" required placeholder="DEPT_TECH" />
+    </div>
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Group Name</label>
+      <input pInputText [(ngModel)]="newGroupName" name="newGroupName" required
+        placeholder="Technology Department Group" />
+    </div>
+    <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+      <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+      <p-button label="Create Group" type="submit" [disabled]="groupForm.invalid" styleClass="glow-button"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Manage Group Details Modal -->
+<p-dialog header="Group Config: {{ selectedGroup()?.groupName }}" [visible]="selectedGroup() !== null"
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '700px'}"
+  styleClass="glass-dialog xl-card">
+  <div class="group-details-layout">
+    <!-- Members Column -->
+    <div class="sub-col">
+      <h4>Members</h4>
+      <div class="member-list">
+        <div *ngFor="let m of selectedGroup()?.members" class="member-item">
+          <code>{{ m }}</code>
+          <button (click)="onRemoveMemberFromGroup(m)" class="mini-btn danger" title="Remove Member">×</button>
+        </div>
+      </div>
+      <div class="add-action-row">
+        <select class="form-input mini" [(ngModel)]="userToAddGroup"
+          style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+          <option value="">-- Add Member --</option>
+          <option *ngFor="let u of users()" [value]="u.username">{{ u.username }}</option>
+        </select>
+        <button (click)="onAddMemberToGroup()" class="glow-button mini-btn" style="min-width: 30px;">+</button>
+      </div>
+    </div>
+
+    <!-- Roles Column -->
+    <div class="sub-col">
+      <h4>Group Roles</h4>
+      <div class="member-list">
+        <div *ngFor="let r of selectedGroup()?.roles" class="member-item">
+          <span class="mini-badge purple">{{ r }}</span>
+          <button (click)="onRevokeRoleFromGroup(r)" class="mini-btn danger" title="Revoke Role">×</button>
+        </div>
+      </div>
+      <div class="add-action-row">
+        <select class="form-input mini" [(ngModel)]="roleToAddGroup"
+          style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+          <option value="">-- Associate Role --</option>
+          <option *ngFor="let r of roles()" [value]="r.roleCode">{{ r.roleCode }}</option>
+        </select>
+        <button (click)="onAssignRoleToGroup()" class="glow-button mini-btn" style="min-width: 30px;">+</button>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Dismiss" severity="secondary" (click)="closeModals()"></p-button>
+  </ng-template>
+</p-dialog>

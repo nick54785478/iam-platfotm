@@ -1,0 +1,56 @@
+.list-section {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mini-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+/* Fix input overflow and styling in modal */
+::ng-deep .glass-dialog .p-dialog-content {
+  overflow-x: hidden;
+}
+
+::ng-deep .p-inputtext, ::ng-deep .p-password input {
+  width: 100%;
+  box-sizing: border-box !important;
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+
+::ng-deep .p-inputtext:focus, ::ng-deep .p-password input:focus {
+  border-color: var(--primary, #6366f1) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+::ng-deep .p-password {
+  width: 100%;
+  display: block;
+}

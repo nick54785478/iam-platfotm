@@ -1,0 +1,84 @@
+<div class="list-section glass-panel animate-fade-in">
+  <div class="section-header">
+    <h3>Active Tenant Personnel</h3>
+    <p-button label="Create Member" icon="pi pi-plus" (click)="openAddUserModal()"
+      styleClass="glow-button"></p-button>
+  </div>
+  <div class="table-container mt-4">
+    <p-table [value]="users()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Roles Assigned</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td><code>{{ user.username }}</code></td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span *ngFor="let r of user.roles" class="mini-badge">{{ r }}</span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">
+              {{ user.status }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <p-button icon="pi pi-key" [rounded]="true" [text]="true" (click)="openAssignRoleUserModal(user)"
+                title="Assign Role"></p-button>
+              <p-button *ngIf="user.status === 'ACTIVE'" icon="pi pi-ban" [rounded]="true" [text]="true"
+                severity="danger" (click)="onDeactivateUser(user.username)" title="Deactivate"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<p-dialog header="Create Member" [visible]="showAddUserModal()" (visibleChange)="!$event && closeModals()"
+  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+  <form (ngSubmit)="onCreateUser()" #userForm="ngForm">
+    <div class="form-group p-fluid">
+      <label class="form-label">Username</label>
+      <input pInputText [(ngModel)]="newUsername" name="newUsername" required placeholder="alex.zhang" />
+    </div>
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Email Address</label>
+      <input pInputText type="email" [(ngModel)]="newEmail" name="newEmail" required email
+        placeholder="alex@company.com" />
+    </div>
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Temporary Password</label>
+      <p-password [(ngModel)]="newPassword" name="newPassword" [required]="true" placeholder="••••••••"
+        [toggleMask]="true" [feedback]="false"></p-password>
+    </div>
+    <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+      <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+      <p-button label="Confirm Create" type="submit" [disabled]="userForm.invalid"
+        styleClass="glow-button"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Assign Role to User Modal -->
+<p-dialog header="Assign Role to {{ roleUserTarget()?.username }}" [visible]="roleUserTarget() !== null"
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+  <div class="form-group p-fluid">
+    <label class="form-label">Select Role</label>
+    <select class="form-input" [(ngModel)]="selectedRoleCode"
+      style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 6px;">
+      <option *ngFor="let r of roles()" [value]="r.roleCode">{{ r.roleName }} ({{ r.roleCode }})</option>
+    </select>
+  </div>
+  <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+    <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
+    <p-button label="Confirm Assign" (click)="onAssignRoleToUserSubmit()" styleClass="glow-button"></p-button>
+  </div>
+</p-dialog>
