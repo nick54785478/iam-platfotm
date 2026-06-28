@@ -38,8 +38,8 @@
 </div>
 
 <!-- Create Role Modal -->
-<p-dialog header="Create Role" [visible]="showAddRoleModal()" (visibleChange)="!$event && closeModals()"
-  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Create Role" [visible]="showAddRoleModal()" (visibleChange)="!$event && closeModals()"
+  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <form (ngSubmit)="onCreateRole()" #roleForm="ngForm">
     <div class="form-group p-fluid">
       <label class="form-label">Role Code</label>
@@ -51,14 +51,14 @@
     </div>
     <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
       <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
-      <p-button label="Create" type="submit" [disabled]="roleForm.invalid" styleClass="glow-button"></p-button>
+      <p-button label="Create" (click)="onCreateRole()" [disabled]="roleForm.invalid" styleClass="glow-button"></p-button>
     </div>
   </form>
 </p-dialog>
 
 <!-- Assign Permission Modal -->
-<p-dialog header="Assign Permission to {{ permRoleTarget()?.roleName }}" [visible]="permRoleTarget() !== null"
-  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Assign Permission to {{ permRoleTarget()?.roleName }}" [visible]="permRoleTarget() !== null"
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <form (ngSubmit)="onAssignPermissionSubmit()" #permForm="ngForm">
     <div class="form-group p-fluid">
       <label class="form-label">System Code</label>
@@ -75,15 +75,14 @@
     </div>
     <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
       <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
-      <p-button label="Confirm Report" type="submit" [disabled]="permForm.invalid"
-        styleClass="glow-button"></p-button>
+      <p-button label="Confirm Report" (click)="onAssignPermissionSubmit()" [disabled]="permForm.invalid" styleClass="glow-button"></p-button>
     </div>
   </form>
 </p-dialog>
 
 <!-- Rename Role Modal -->
-<p-dialog header="Rename Role - {{ renameRoleTarget()?.roleCode }}" [visible]="renameRoleTarget() !== null"
-  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Rename Role - {{ renameRoleTarget()?.roleCode }}" [visible]="renameRoleTarget() !== null"
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <div class="form-group p-fluid">
     <label class="form-label">New Role Name</label>
     <input pInputText [(ngModel)]="newRoleRename" placeholder="Senior Backend Developer" />

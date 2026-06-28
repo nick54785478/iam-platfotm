@@ -31,26 +31,5 @@
   margin-bottom: 4px;
 }
 
-/* Fix input overflow and styling in modal */
-::ng-deep .glass-dialog .p-dialog-content {
-  overflow-x: hidden;
-}
 
-::ng-deep .p-inputtext, ::ng-deep .p-password input {
-  width: 100%;
-  box-sizing: border-box !important;
-  background: rgba(15, 23, 42, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
-  border-radius: 6px !important;
-}
 
-::ng-deep .p-inputtext:focus, ::ng-deep .p-password input:focus {
-  border-color: var(--primary, #6366f1) !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
-}
-
-::ng-deep .p-password {
-  width: 100%;
-  display: block;
-}

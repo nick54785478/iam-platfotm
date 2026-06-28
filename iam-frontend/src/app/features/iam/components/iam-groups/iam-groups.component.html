@@ -36,8 +36,8 @@
 </div>
 
 <!-- Create Group Modal -->
-<p-dialog header="Create Permission Group" [visible]="showAddGroupModal()" (visibleChange)="!$event && closeModals()"
-  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Create Permission Group" [visible]="showAddGroupModal()" (visibleChange)="!$event && closeModals()"
+  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <form (ngSubmit)="onCreateGroup()" #groupForm="ngForm">
     <div class="form-group p-fluid">
       <label class="form-label">Group Code</label>
@@ -50,15 +50,15 @@
     </div>
     <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
       <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
-      <p-button label="Create Group" type="submit" [disabled]="groupForm.invalid" styleClass="glow-button"></p-button>
+      <p-button label="Create Group" (click)="onCreateGroup()" [disabled]="groupForm.invalid" styleClass="glow-button"></p-button>
     </div>
   </form>
 </p-dialog>
 
 <!-- Manage Group Details Modal -->
-<p-dialog header="Group Config: {{ selectedGroup()?.groupName }}" [visible]="selectedGroup() !== null"
+<p-dialog [draggable]="false" header="Group Config: {{ selectedGroup()?.groupName }}" [visible]="selectedGroup() !== null"
   (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '700px'}"
-  styleClass="glass-dialog xl-card">
+  styleClass="glass-dialog xl-card" appendTo="body">
   <div class="group-details-layout">
     <!-- Members Column -->
     <div class="sub-col">
@@ -98,7 +98,7 @@
       </div>
     </div>
   </div>
-  <ng-template pTemplate="footer">
-    <p-button label="Dismiss" severity="secondary" (click)="closeModals()"></p-button>
-  </ng-template>
+  <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+    <p-button label="Close" (click)="closeModals()"></p-button>
+  </div>
 </p-dialog>

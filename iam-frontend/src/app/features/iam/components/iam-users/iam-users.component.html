@@ -1,8 +1,7 @@
 <div class="list-section glass-panel animate-fade-in">
   <div class="section-header">
     <h3>Active Tenant Personnel</h3>
-    <p-button label="Create Member" icon="pi pi-plus" (click)="openAddUserModal()"
-      styleClass="glow-button"></p-button>
+    <p-button label="Create Member" icon="pi pi-plus" (click)="openAddUserModal()" styleClass="glow-button"></p-button>
   </div>
   <div class="table-container mt-4">
     <p-table [value]="users()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
@@ -42,8 +41,8 @@
 </div>
 
 <!-- Create User Modal -->
-<p-dialog header="Create Member" [visible]="showAddUserModal()" (visibleChange)="!$event && closeModals()"
-  [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Create Member" [visible]="showAddUserModal()"
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <form (ngSubmit)="onCreateUser()" #userForm="ngForm">
     <div class="form-group p-fluid">
       <label class="form-label">Username</label>
@@ -61,15 +60,16 @@
     </div>
     <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
       <p-button label="Cancel" severity="secondary" (click)="closeModals()"></p-button>
-      <p-button label="Confirm Create" type="submit" [disabled]="userForm.invalid"
+      <p-button label="Confirm Create" (click)="onCreateUser()" [disabled]="userForm.invalid"
         styleClass="glow-button"></p-button>
     </div>
   </form>
 </p-dialog>
 
 <!-- Assign Role to User Modal -->
-<p-dialog header="Assign Role to {{ roleUserTarget()?.username }}" [visible]="roleUserTarget() !== null"
-  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">
+<p-dialog [draggable]="false" header="Assign Role to {{ roleUserTarget()?.username }}"
+  [visible]="roleUserTarget() !== null" (visibleChange)="!$event && closeModals()" [modal]="true"
+  [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
   <div class="form-group p-fluid">
     <label class="form-label">Select Role</label>
     <select class="form-input" [(ngModel)]="selectedRoleCode"

@@ -21,7 +21,7 @@ class UserReaderAdapter implements UserReaderPort {
 
 	@Override
 	public Optional<UserRepresentation> fetchByUsername(String tenantId, String username) {
-		// 🚀 基礎設施層同步改用 username 自資料庫的 user_view 表進行查找
+		// 基礎設施層同步改用 username 自資料庫的 user_view 表進行查找
 		return viewRepository.findByTenantIdAndUsername(tenantId, username).map(this::toRepresentation);
 	}
 
