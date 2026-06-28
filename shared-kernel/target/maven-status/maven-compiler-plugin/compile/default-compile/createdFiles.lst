@@ -1,6 +1,7 @@
 security\service\DynamicRuleQueryService.class
+security\config\SharedSecurityAutoConfiguration.class
+security\interceptor\PermissionGuardInterceptor.class
+security\annotation\RequiresPermission.class
 security\port\ApiResourceRuleQueryRepositoryPort.class
 security\port\RuleCacheManagerPort.class
 security\dto\ApiResourceRuleGottenResult.class
-security\interceptor\PermissionGuardInterceptor.class
-security\annotation\RequiresPermission.class
