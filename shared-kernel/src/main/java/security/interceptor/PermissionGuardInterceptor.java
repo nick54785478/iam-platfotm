@@ -46,6 +46,16 @@ public class PermissionGuardInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 🚀 埋入微服務進站時的 Log
+        String incTenant = request.getHeader("X-Tenant-Id");
+        String incPerms = request.getHeader("X-User-Permissions");
+
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println("[微服務攔截器啟動] 接收到請求: " + request.getRequestURI());
+        System.out.println("  -> 收到 Header [X-Tenant-Id]: " + incTenant);
+        System.out.println("  -> 收到 Header [X-User-Permissions]: " + incPerms);
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
         // ===================================================================
         // 防線一：靜態核心硬編碼優先 (Break-Glass Mechanism)
         // 優先讀取 Controller 方法或類別上的註解，用於關鍵路徑的強制防護
