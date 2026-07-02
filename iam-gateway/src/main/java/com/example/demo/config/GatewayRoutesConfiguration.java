@@ -78,7 +78,7 @@ public class GatewayRoutesConfiguration {
                     String userId = (String) servletRequest.getAttribute("X-User-Id");
                     String permissions = (String) servletRequest.getAttribute("X-User-Permissions");
 
-                    // 🚀 埋入網關出站前的 Log
+                    // 🚀 埋入網關出站前的 Log (建議在正式上線 Production 時可以調成 log.debug 甚至關閉)
                     System.out.println("=================================================");
                     System.out.println("[SCG 網關準備轉發] 目標路徑: " + request.uri());
                     System.out.println("  -> 注入 Header [X-Tenant-Id]: " + tenantId);
@@ -87,15 +87,21 @@ public class GatewayRoutesConfiguration {
 
                     // 若有 tenantId，代表此請求已通過 JWT 驗證
                     if (tenantId != null) {
+                        // 🚀 終極資安修復：使用 .set() 強制覆寫，防堵 Header 疊加 (WPG,WPG) 與惡意竄改
                         ServerRequest mutatedRequest = ServerRequest.from(request)
-                                .header("X-Tenant-Id", tenantId)
-                                .header("X-User-Id", userId)
-                                .header("X-User-Permissions", permissions != null ? permissions : "")
+                                .headers(httpHeaders -> {
+                                    httpHeaders.set("X-Tenant-Id", tenantId);
+                                    httpHeaders.set("X-User-Id", userId != null ? userId : "");
+                                    httpHeaders.set("X-User-Permissions", permissions != null ? permissions : "");
+
+                                    // 💡 零信任架構：拔除原始 JWT Token，確保下游微服務只能依賴網關驗證過的資訊
+                                    httpHeaders.remove("Authorization");
+                                })
                                 .build();
                         return next.handle(mutatedRequest);
                     }
 
-                    // 若無，代表是白名單路徑，直接放行
+                    // 若無 tenantId，代表是白名單路徑 (如 /api/auth/login)，直接放行
                     return next.handle(request);
                 })
                 // 2. 全域基礎限流
