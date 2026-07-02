@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.example.demo.application.shared.dto.DepartmentNode;
+import com.example.demo.application.shared.dto.DepartmentRootGottenResult;
+import com.example.demo.application.shared.dto.PageQueriedResult;
+import com.example.demo.application.shared.query.GetDepartmentRootQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -265,6 +268,23 @@ public class DepartmentQueryService {
 																								// 原有的幽靈髒資料
 				Collections.unmodifiableList(childrenViews) // 封裝防禦，避免外層代碼篡改子節點清單
 		);
+	}
+
+	/**
+	 * <b>【業務場景】分頁載入特定租戶的組織樹根節點</b>
+	 *
+	 * @param query 高內聚的查詢指令物件
+	 * @return 去框架化的通用分頁結果
+	 */
+	public PageQueriedResult<DepartmentRootGottenResult> getTenantRootNodes(GetDepartmentRootQuery query) {
+
+		log.info("[Query-Service] 準備查詢租戶 {} 的根節點分頁資料. Page: {}, Size: {}",
+				query.tenantId(), query.page(), query.size());
+
+		// 🛡️ 實務擴充點：若未來需要檢查該操作者是否有 "READ_ALL" 權限，可在此處攔截
+
+		// 將查詢派發給基礎設施層的 Adapter 執行
+		return treeReader.getTenantRootNodes(query);
 	}
 
 }

@@ -2,14 +2,24 @@ package com.example.demo.infra.adapter;
 
 import com.example.demo.application.port.DepartmentTreeReaderPort;
 import com.example.demo.application.shared.dto.DepartmentNode;
+import com.example.demo.application.shared.dto.DepartmentRootGottenResult;
+import com.example.demo.application.shared.dto.PageQueriedResult;
+import com.example.demo.application.shared.query.GetDepartmentRootQuery;
+import com.example.demo.infra.persistence.DepartmentPersistence;
+import com.example.demo.infra.shared.dto.DepartmentRootGottenView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +43,7 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final DepartmentPersistence departmentPersistence;
 
     // 定義 Redis Key 的命名空間
     private static final String KEY_SUBTREE = "read-model:tenant:%s:subtree:%s:incl-disabled:%b";
@@ -232,5 +243,53 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
             }
             return map;
         });
+    }
+
+    /**
+     * <b>【CQRS 完全體】分頁查詢指定租戶的頂層根部門列表</b>
+     * 傳入高內聚的 Query 物件，回傳去框架化的通用分頁結果。
+     *
+     * @param query
+     */
+    @Override
+    public PageQueriedResult<DepartmentRootGottenResult> getTenantRootNodes(GetDepartmentRootQuery query) {
+        // 1. 參數參數安全淨化 (從 Query 物件中取出)
+        String safeCode = StringUtils.hasText(query.code()) ? query.code().trim() : null;
+        String safeName = StringUtils.hasText(query.name()) ? query.name().trim() : null;
+
+        log.debug("[CQRS-Query] 執行 Root 分頁查詢. Tenant: {}, Page: {}, Size: {}",
+                query.tenantId(), query.page(), query.size());
+
+        // 2. 封裝為 Spring Data 的 Pageable 實例 (排序規則鎖死在 Adapter 內)
+        Pageable pageable = PageRequest.of(
+                query.page(),
+                query.size(),
+                Sort.by("sortOrder").ascending().and(Sort.by("code").ascending())
+        );
+
+        // 3. 呼叫底層 JPA 儲存庫
+        Page<DepartmentRootGottenView> springPage = departmentPersistence.findTenantRootsWithPage(
+                query.tenantId(), safeCode, safeName, pageable
+        );
+
+        // 4. 流式映射為應用層 DTO
+        List<DepartmentRootGottenResult> content = springPage.getContent().stream()
+                .map(proj -> new DepartmentRootGottenResult(
+                        proj.getId(),
+                        proj.getCode(),
+                        proj.getName(),
+                        proj.getStatus(),
+                        proj.getSortOrder() != null ? proj.getSortOrder() : 0,
+                        proj.getDirectHeadcount() != null ? proj.getDirectHeadcount() : 0,
+                        proj.getTotalHeadcount() != null ? proj.getTotalHeadcount() : 0
+                )).toList();
+
+        // 5. 返回通用分頁載體
+        return new PageQueriedResult<>(
+                content,
+                springPage.getTotalElements(),
+                springPage.getTotalPages(),
+                springPage.getNumber()
+        );
     }
 }
