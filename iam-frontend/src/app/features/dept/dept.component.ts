@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DeptService, DepartmentTreeNode, DepartmentFlatNode, DepartmentTemporalState } from '../../core/services/dept.service';
 import { AuthService } from '../../core/services/auth.service';
+import { SystemMessageService } from '../../core/services/system-message.service';
 
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -24,6 +25,7 @@ import { InputTextModule } from 'primeng/inputtext';
 export class DeptComponent implements OnInit {
   private readonly deptService = inject(DeptService);
   private readonly authService = inject(AuthService);
+  private readonly systemMessageService = inject(SystemMessageService);
 
   searchKeyword = '';
 
@@ -59,14 +61,63 @@ export class DeptComponent implements OnInit {
   renameTarget = signal<DepartmentTreeNode | null>(null);
   newRenameVal = '';
 
+  // Root nodes pagination
+  rootDepartments = signal<any[]>([]);
+  totalRoots = signal<number>(0);
+
+  // Tree Dialog
+  showTreeDialog = signal(false);
+  currentEditingRootId = signal<string | null>(null);
+
   ngOnInit(): void {
-    this.loadTree();
+    this.loadRoots();
   }
 
-  loadTree(): void {
+  loadRoots(): void {
+    const tenantId = this.authService.currentTenant() || 'DEFAULT';
+    this.deptService.getRoots(tenantId, 0, 50, this.searchKeyword).subscribe({
+      next: (res) => {
+        if (res && res.data && res.data.content) {
+          this.rootDepartments.set(res.data.content);
+          this.totalRoots.set(res.data.totalElements);
+        }
+      },
+      error: () => {
+        // Fallback mockup
+        this.rootDepartments.set([
+          { id: 'ROOT', name: 'Global HQ Operations', code: 'ROOT', status: 'ACTIVE', directHeadcount: 1, totalHeadcount: 2 },
+          { id: 'ILLEGAL_ARGUMENT', name: 'ILLEGAL_ARGUMENT', code: 'ILLEGAL', status: 'ACTIVE', directHeadcount: 0, totalHeadcount: 0 }
+        ]);
+        this.totalRoots.set(2);
+      }
+    });
+  }
+
+  openTreeEditor(root: any): void {
+    this.currentEditingRootId.set(root.id);
+    this.showTreeDialog.set(true);
+    this.loadTree(root.id);
+  }
+
+  closeTreeDialog(): void {
+    this.showTreeDialog.set(false);
+    this.currentEditingRootId.set(null);
+    this.selectedNode.set(null);
+    this.loadRoots();
+  }
+
+  refreshCurrentView(): void {
+    if (this.showTreeDialog() && this.currentEditingRootId()) {
+      this.loadTree(this.currentEditingRootId()!);
+    } else {
+      this.loadRoots();
+    }
+  }
+
+  loadTree(rootId: string): void {
     const tenantId = this.authService.currentTenant() || 'DEFAULT';
     // Retrieve root tree layout. Usually started at a pre-provisioned 'ROOT' department
-    this.deptService.getTree(tenantId, 'ROOT', true).subscribe({
+    this.deptService.getTree(tenantId, rootId, true).subscribe({
       next: (res) => {
         this.rootNodes.set([res]);
         this.flattenTree([res]);
@@ -74,6 +125,10 @@ export class DeptComponent implements OnInit {
       error: () => {
         // Fallback mockup tree if database is empty or offline
         const mockRoot = this.mockTree();
+        if (rootId === 'ILLEGAL_ARGUMENT') {
+          mockRoot.name = 'ILLEGAL_ARGUMENT';
+          mockRoot.id = 'ILLEGAL_ARGUMENT';
+        }
         this.rootNodes.set([mockRoot]);
         this.flattenTree([mockRoot]);
       }
@@ -110,7 +165,7 @@ export class DeptComponent implements OnInit {
   loadNodePersonnel(deptId: string): void {
     this.deptService.getHierarchy(deptId).subscribe({
       next: (res) => {
-        this.activeEmployees.set(res?.data?.employees || []);
+        this.activeEmployees.set(res?.data?.currentEmployees || []);
       },
       error: () => {
         // Mock fallback personnel list
@@ -175,49 +230,30 @@ export class DeptComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchKeyword) {
-      this.loadTree();
-      return;
-    }
-    const tenantId = this.authService.currentTenant() || 'DEFAULT';
-    this.deptService.searchDepartments(tenantId, this.searchKeyword).subscribe({
-      next: (res) => {
-        // Search API returns a flat list. We map it to nodes
-        const nodes: DepartmentTreeNode[] = res.map((item: any) => ({
-          ...item,
-          directEmployeeCount: 0,
-          totalEmployeeCount: 0
-        }));
-        this.rootNodes.set(nodes);
-      },
-      error: () => {
-        const filtered = this.flatDeptsList().filter(d =>
-          d.name.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-          d.code.toLowerCase().includes(this.searchKeyword.toLowerCase())
-        );
-        const nodes: DepartmentTreeNode[] = filtered.map(item => ({
-          ...item,
-          directEmployeeCount: 0,
-          totalEmployeeCount: 0
-        }));
-        this.rootNodes.set(nodes);
-      }
-    });
+    this.loadRoots();
   }
 
   // --- Personnel Actions ---
   onAssignEmployee(): void {
     const dept = this.selectedNode();
     if (dept && this.employeeToAssign) {
+      const emp = this.employeeToAssign;
       this.deptService.assignEmployee(dept.id, this.employeeToAssign).subscribe({
-        next: () => {
-          this.loadNodePersonnel(dept.id);
-          this.loadTree();
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', 'Employee assigned successfully');
+          }
+          if (!this.activeEmployees().includes(emp)) {
+            this.activeEmployees.set([...this.activeEmployees(), emp]);
+          }
           this.employeeToAssign = '';
+          setTimeout(() => {
+            this.loadNodePersonnel(dept.id);
+            this.refreshCurrentView();
+          }, 800);
         },
-        error: () => {
-          this.activeEmployees.set([...this.activeEmployees(), this.employeeToAssign]);
-          this.employeeToAssign = '';
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to assign employee: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -227,12 +263,18 @@ export class DeptComponent implements OnInit {
     const dept = this.selectedNode();
     if (dept) {
       this.deptService.unassignEmployee(dept.id, empId).subscribe({
-        next: () => {
-          this.loadNodePersonnel(dept.id);
-          this.loadTree();
-        },
-        error: () => {
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', 'Employee unassigned successfully');
+          }
           this.activeEmployees.set(this.activeEmployees().filter(e => e !== empId));
+          setTimeout(() => {
+            this.loadNodePersonnel(dept.id);
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to unassign employee: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -243,10 +285,17 @@ export class DeptComponent implements OnInit {
     const dept = this.selectedNode();
     if (dept) {
       this.deptService.changeSortOrder(dept.id, this.nodeSortOrder).subscribe({
-        next: () => this.loadTree(),
-        error: () => {
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', 'Sort order updated successfully');
+          }
           dept.sortOrder = this.nodeSortOrder;
-          this.loadTree();
+          setTimeout(() => {
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to change sort order: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -257,16 +306,17 @@ export class DeptComponent implements OnInit {
     if (source && this.mergeTargetId) {
       if (confirm(`Are you absolutely sure you want to merge ${source.name} into the target department? This will disable ${source.name} permanently.`)) {
         this.deptService.mergeDepartment(source.id, this.mergeTargetId).subscribe({
-          next: () => {
+          next: (res) => {
+            if (res && res.code === '200' || res && !res.code) {
+              this.systemMessageService.showSuccess('Success', 'Department merged successfully');
+            }
             this.selectedNode.set(null);
-            this.loadTree();
+            setTimeout(() => {
+              this.refreshCurrentView();
+            }, 800);
           },
-          error: () => {
-            // Mock restructure
-            const targetNode = this.flatDeptsList().find(d => d.id === this.mergeTargetId);
-            alert(`Merger mock execute: ${source.name} assets merged into ${targetNode?.name}`);
-            this.selectedNode.set(null);
-            this.loadTree();
+          error: (err) => {
+            this.systemMessageService.showError('Error', `Failed to merge department: ${err.error?.message || err.statusText}`);
           }
         });
       }
@@ -290,12 +340,11 @@ export class DeptComponent implements OnInit {
       this.newDeptCode.toUpperCase(),
       this.newDeptName
     ).subscribe({
-      next: () => {
-        this.loadTree();
-        this.closeModals();
-      },
-      error: () => {
-        // Local tree simulate insert
+      next: (res) => {
+        if (res && res.code === '200' || res && !res.code) {
+          this.systemMessageService.showSuccess('Success', `Department created successfully`);
+        }
+        
         const parentId = parent ? parent.id : null;
         const newNode: DepartmentTreeNode = {
           id: this.newDeptId.toUpperCase(),
@@ -308,7 +357,6 @@ export class DeptComponent implements OnInit {
           totalEmployeeCount: 0,
           children: []
         };
-
         if (parent) {
           parent.children = [...(parent.children || []), newNode];
         } else {
@@ -316,6 +364,13 @@ export class DeptComponent implements OnInit {
         }
         this.flattenTree(this.rootNodes());
         this.closeModals();
+
+        setTimeout(() => {
+          this.refreshCurrentView();
+        }, 800);
+      },
+      error: (err) => {
+        this.systemMessageService.showError('Error', `Failed to create department: ${err.error?.message || err.statusText}`);
       }
     });
   }
@@ -329,13 +384,18 @@ export class DeptComponent implements OnInit {
     const target = this.renameTarget();
     if (target && this.newRenameVal) {
       this.deptService.renameDepartment(target.id, this.newRenameVal).subscribe({
-        next: () => {
-          this.loadTree();
-          this.closeModals();
-        },
-        error: () => {
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', `Department renamed successfully`);
+          }
           target.name = this.newRenameVal;
           this.closeModals();
+          setTimeout(() => {
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to rename department: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -344,14 +404,22 @@ export class DeptComponent implements OnInit {
   onDisableDept(id: string): void {
     if (confirm('Deactivating a department disables scheduling and locks user profile assignments. Proceed?')) {
       this.deptService.disableDepartment(id).subscribe({
-        next: () => this.loadTree(),
-        error: () => {
-          // Find and change locally
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', `Department disabled successfully`);
+          }
           const findAndDisable = (n: DepartmentTreeNode) => {
             if (n.id === id) n.status = 'DISABLED';
             if (n.children) n.children.forEach(findAndDisable);
           };
           this.rootNodes().forEach(findAndDisable);
+          
+          setTimeout(() => {
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to disable department: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -360,12 +428,10 @@ export class DeptComponent implements OnInit {
   onDeleteDept(id: string): void {
     if (confirm('Cascading delete will remove all sub-departments. This operation records Outbox ES logs. Continue?')) {
       this.deptService.deleteDepartment(id).subscribe({
-        next: () => {
-          this.selectedNode.set(null);
-          this.loadTree();
-        },
-        error: () => {
-          // Remove local node
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', `Department deleted successfully`);
+          }
           const filterNode = (list: DepartmentTreeNode[]): DepartmentTreeNode[] => {
             return list.filter(n => {
               if (n.id === id) return false;
@@ -376,6 +442,13 @@ export class DeptComponent implements OnInit {
           this.rootNodes.set(filterNode(this.rootNodes()));
           this.flattenTree(this.rootNodes());
           this.selectedNode.set(null);
+
+          setTimeout(() => {
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to delete department: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -385,9 +458,17 @@ export class DeptComponent implements OnInit {
     const dept = this.selectedNode();
     if (dept) {
       this.deptService.restoreDepartment(dept.id).subscribe({
-        next: () => this.loadTree(),
-        error: () => {
+        next: (res) => {
+          if (res && res.code === '200' || res && !res.code) {
+            this.systemMessageService.showSuccess('Success', `Department restored successfully`);
+          }
           dept.status = 'ACTIVE';
+          setTimeout(() => {
+            this.refreshCurrentView();
+          }, 800);
+        },
+        error: (err) => {
+          this.systemMessageService.showError('Error', `Failed to restore department: ${err.error?.message || err.statusText}`);
         }
       });
     }
@@ -408,10 +489,16 @@ export class DeptComponent implements OnInit {
     if (sourceId && sourceId !== targetNode.id) {
       if (confirm(`Do you want to re-parent department ${sourceId} to be under ${targetNode.name}?`)) {
         this.deptService.moveDepartment(sourceId, targetNode.id).subscribe({
-          next: () => this.loadTree(),
-          error: () => {
-            alert(`Moved ${sourceId} under ${targetNode.name} (Simulation)`);
-            this.loadTree();
+          next: (res) => {
+            if (res && res.code === '200' || res && !res.code) {
+              this.systemMessageService.showSuccess('Success', `Department moved successfully`);
+            }
+            setTimeout(() => {
+              this.refreshCurrentView();
+            }, 800);
+          },
+          error: (err) => {
+            this.systemMessageService.showError('Error', `Failed to move department: ${err.error?.message || err.statusText}`);
           }
         });
       }

@@ -6,12 +6,32 @@
     </div>
     <div class="header-btns">
       <p-button label="Add Root Department" icon="pi pi-plus" (click)="openCreateDeptModal(null)" styleClass="glow-button"></p-button>
-      <p-button label="Refresh Tree" icon="pi pi-refresh" severity="secondary" (click)="loadTree()"></p-button>
+      <p-button label="Refresh" icon="pi pi-refresh" severity="secondary" (click)="loadRoots()"></p-button>
     </div>
   </div>
 
-  <!-- Main Dual Pane Layout -->
-  <div class="dept-layout">
+  <!-- Main view: List of root departments -->
+  <div class="roots-grid mt-4" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+    <div *ngFor="let root of rootDepartments()" class="root-card glass-panel" (click)="openTreeEditor(root)" style="cursor: pointer; padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0;"><span class="node-icon">🏢</span> {{ root.name }}</h3>
+        <span class="badge" [ngClass]="root.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'">{{ root.status }}</span>
+      </div>
+      <p style="color: #94a3b8; margin-top: 0.5rem; margin-bottom: 0;">Code: <code>{{ root.code }}</code></p>
+      <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-top: 1rem; color: #cbd5e1;">
+        <span>ID: {{ root.id }}</span>
+        <span>👥 {{ root.directHeadcount !== undefined ? root.directHeadcount : root.directEmployeeCount }}/{{ root.totalHeadcount !== undefined ? root.totalHeadcount : root.totalEmployeeCount }}</span>
+      </div>
+    </div>
+    <div *ngIf="rootDepartments().length === 0" class="empty-state glass-panel" style="grid-column: 1 / -1;">
+      No root departments found. Click "Add Root Department" to begin.
+    </div>
+  </div>
+
+  <!-- Tree Editing Dialog -->
+  <p-dialog header="Organization Tree Editor" [visible]="showTreeDialog()" (visibleChange)="!$event && closeTreeDialog()" [modal]="true" [style]="{width: '90vw', height: '90vh'}" styleClass="glass-dialog" [maximizable]="true">
+    <!-- Main Dual Pane Layout -->
+    <div class="dept-layout" style="height: 100%;">
     
     <!-- Left Pane: Interactive Org Tree -->
     <div class="tree-pane glass-panel">
@@ -203,6 +223,7 @@
     </div>
 
   </div>
+  </p-dialog>
 
   <!-- Create Department Modal -->
   <p-dialog header="Create Department" [visible]="showCreateModal()" (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog">

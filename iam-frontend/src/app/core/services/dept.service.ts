@@ -108,6 +108,17 @@ export class DeptService {
   }
 
   // --- Department Query Commands ---
+  getRoots(tenantId: string, page: number = 0, size: number = 10, keyword: string = ''): Observable<any> {
+    let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    if (keyword) {
+      params = params.set('name', keyword);
+    }
+    return this.http.get<any>(`${environment.apiEndpoint}/departments/roots`, {
+      headers: { 'X-Tenant-Id': tenantId },
+      params
+    });
+  }
+
   getTree(tenantId: string, rootId: string, includeDisabled = false): Observable<DepartmentTreeNode> {
     const params = new HttpParams().set('includeDisabled', includeDisabled.toString());
     return this.http.get<DepartmentTreeNode>(`${environment.apiEndpoint}/departments/${tenantId}/${rootId}/tree`, { params });

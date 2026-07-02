@@ -104,6 +104,7 @@ public class DepartmentQueryService {
 		// 4. 🚀 批次收集所有相關部門 ID，發動單次大批量反查，消滅 N+1
 		// =========================================================
 		List<String> allTargetDeptIds = new ArrayList<>();
+		allTargetDeptIds.add(currentNode.id());
 		if (parentNode != null) {
 			allTargetDeptIds.add(parentNode.id());
 		}
