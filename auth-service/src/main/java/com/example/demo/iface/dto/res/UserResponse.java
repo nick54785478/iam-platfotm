@@ -15,6 +15,8 @@ public class UserResponse {
 
     public record UserDeletedResource(String code, String message){}
 
+    public record UserReactivatedResource(String code, String message){}
+
     public record UserViewGottenResource(String code, String message, UserRepresentation data){}
 
     public record UsersViewGottenResource(String code, String message, List<UserRepresentation> data){}

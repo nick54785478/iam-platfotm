@@ -3,6 +3,7 @@ package com.example.demo.application.service;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.port.PasswordEncoderPort;
-import com.example.demo.application.port.RoleWriterPort;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 import com.example.demo.application.shared.command.CreateUserCommand;
 import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
@@ -31,17 +32,18 @@ import com.example.demo.infra.context.TenantContext;
  * 內部僅持久化 Role UUID， 但外圈視圖與 Kafka 期待人類可讀代碼的斷層，在應用層流暢拼接並組裝事件拋出。
  * </p>
  */
+@Slf4j
 @Service
-@Transactional // 🚀 啟動寫入事務，保障業務與 Outbox 事件落地的原子性
+@Transactional // 啟動寫入事務，保障業務與 Outbox 事件落地的原子性
 public class UserCommandService {
 
-	private final UserWriterPort userWriterPort;
+	private final UserCommandRepositoryPort userWriterPort;
 	private final PasswordEncoderPort passwordEncoderPort;
-	private final RoleWriterPort roleWriterPort;
+	private final RoleCommandRepositoryPort roleWriterPort;
 	private final ApplicationEventPublisher eventPublisher;
 
-	public UserCommandService(UserWriterPort userWriterPort, PasswordEncoderPort passwordEncoderPort,
-			RoleWriterPort roleWriterPort, ApplicationEventPublisher eventPublisher) {
+	public UserCommandService(UserCommandRepositoryPort userWriterPort, PasswordEncoderPort passwordEncoderPort,
+							  RoleCommandRepositoryPort roleWriterPort, ApplicationEventPublisher eventPublisher) {
 		this.userWriterPort = userWriterPort;
 		this.passwordEncoderPort = passwordEncoderPort;
 		this.roleWriterPort = roleWriterPort;
@@ -106,7 +108,7 @@ public class UserCommandService {
 		// 呼叫聚合根方法（內部自動註冊全量 UserChangedEvent，但內部預設只帶 UUID）
 		user.changeProfile(newEmail);
 
-		// 🚀 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
+		// 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
 		Set<String> actualRoleCodes = roleWriterPort.findRoleCodesByRoleIds(user.getAssignedRoles());
 		user.confirmRoleAssignmentsForView(actualRoleCodes);
 
@@ -123,11 +125,39 @@ public class UserCommandService {
 		// 執行軟刪除領域業務行為
 		user.deactivate();
 
-		// 🚀 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
+		// 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
 		Set<String> actualRoleCodes = roleWriterPort.findRoleCodesByRoleIds(user.getAssignedRoles());
 		user.confirmRoleAssignmentsForView(actualRoleCodes);
 
 		userWriterPort.save(user);
+	}
+
+	/**
+	 * 執行使用者重啟業務
+	 *
+	 * @param username 目標使用者帳號
+	 */
+	@Transactional
+	public void reactivateUser(String username) {
+
+		// 1. 從基礎設施層喚醒聚合根 (Adapter 內部會自動從 TenantContext 取出 TenantId)
+		User user = userWriterPort.findByUsername(username)
+				.orElseThrow(() -> new IllegalArgumentException("User '" + username + "' not found"));
+
+		// 2. 呼叫聚合根內聚業務方法，執行重啟邏輯與計數器歸零
+		user.reactivate();
+
+		// 3. 🛡️ 終極防禦：利用寫入端專屬 Port，極速翻譯 UUID 為 Role Code
+		// 🚀 架構優化：直接將聚合根的 Set<RoleId> 丟進去，免去所有繁瑣的 Stream 轉換！
+		Set<String> humanReadableRoleCodes = roleWriterPort.findRoleCodesByRoleIds(user.getAssignedRoles());
+
+		// 覆蓋並註冊帶有正確 Role Code 的「完全體」變更事件，防堵 UUID 污染讀取側 View
+		user.confirmRoleAssignmentsForView(humanReadableRoleCodes);
+
+		// 4. 透過 Adapter 進行持久化 (Adapter 內部會自動拉取領域事件並發射 Kafka/EventBus)
+		userWriterPort.save(user);
+
+		log.info("[User-Command] 使用者 {} 已成功重啟", username);
 	}
 
 	/**

@@ -158,6 +158,23 @@ public class User {
 	}
 
 	/**
+	 * <b>【管理業務】重啟使用者（恢復商務行為）</b>
+	 * <p>
+	 * 將賬號狀態從 DEACTIVATED 恢復為 ACTIVE，防禦性歸零登入失敗次數，並觸發狀態同步事件。
+	 * </p>
+	 */
+	public void reactivate() {
+		if (this.status != UserStatus.DEACTIVATED) {
+			throw new IllegalStateException("Cannot reactivate: User is not in DEACTIVATED status.");
+		}
+
+		this.status = UserStatus.ACTIVE;
+		this.failedLoginAttempts = 0; // 確保留下的舊計數不會干擾重啟後的登入
+
+		this.registerEvent(this.toChangedEvent());
+	}
+
+	/**
 	 * <b>【內聚組裝】將當前模型的狀態快照轉為統一的狀態變更事件</b>
 	 * <p>
 	 * ⚠️ 注意：此處內部組裝僅能提供 {@code Set<String>} 的 UUID 字串。 若要對外提供強語意的 {@code roleCode}（如
