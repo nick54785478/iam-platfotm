@@ -139,13 +139,23 @@ a:not(.p-button).glow-button {
   border-radius: var(--radius-md);
 }
 
-/* Ensure all PrimeNG buttons have good padding and consistent shape */
-.p-button {
-  padding: 0.75rem 1.5rem !important;
-  font-family: var(--font-display) !important;
-  border-radius: var(--radius-md) !important;
-  font-size: 0.95rem !important;
-  font-weight: 500 !important;
+/* Ensure all PrimeNG text buttons have good padding and consistent shape */
+.p-button:not(.p-button-icon-only):not(.p-button-rounded) {
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-display);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Force text buttons to be transparent if something was overriding them */
+.p-button.p-button-text {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.p-button.p-button-text:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .glow-button:hover {
