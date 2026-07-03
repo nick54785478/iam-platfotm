@@ -54,6 +54,10 @@ public class UserRegisterCommandService {
 				newUser.assignRole(defaultRole.getId());
 			});
 
+			// 🚀 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
+			java.util.Set<String> actualRoleCodes = roleWriterPort.findRoleCodesByRoleIds(newUser.getAssignedRoles());
+			newUser.confirmRoleAssignmentsForView(actualRoleCodes);
+
 			// 6. 存檔落地（自動同步累積領域事件、打包多租戶信封並激活 Outbox）
 			userWriterPort.save(newUser);
 

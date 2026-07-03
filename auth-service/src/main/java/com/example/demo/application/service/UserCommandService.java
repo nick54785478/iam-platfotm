@@ -103,8 +103,12 @@ public class UserCommandService {
 		User user = userWriterPort.findByUsername(username)
 				.orElseThrow(() -> new IllegalArgumentException("User '" + username + "' not found"));
 
-		// 呼叫聚合根方法（內部自動註冊全量 UserChangedEvent）
+		// 呼叫聚合根方法（內部自動註冊全量 UserChangedEvent，但內部預設只帶 UUID）
 		user.changeProfile(newEmail);
+
+		// 🚀 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
+		Set<String> actualRoleCodes = roleWriterPort.findRoleCodesByRoleIds(user.getAssignedRoles());
+		user.confirmRoleAssignmentsForView(actualRoleCodes);
 
 		userWriterPort.save(user);
 	}
@@ -118,6 +122,10 @@ public class UserCommandService {
 
 		// 執行軟刪除領域業務行為
 		user.deactivate();
+
+		// 🚀 補充還原真實角色代碼，確保發出的事件與視圖包含正確的字串而非 UUID
+		Set<String> actualRoleCodes = roleWriterPort.findRoleCodesByRoleIds(user.getAssignedRoles());
+		user.confirmRoleAssignmentsForView(actualRoleCodes);
 
 		userWriterPort.save(user);
 	}
