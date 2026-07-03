@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, computed, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService, UserRepresentation, UserPermissionContextRepresentation } from '../../../../core/services/auth.service';
 import { DeptService } from '../../../../core/services/dept.service';
@@ -25,6 +25,24 @@ export class UserProfileSidebarComponent implements OnChanges {
   profileContext = signal<UserPermissionContextRepresentation | null>(null);
   profileLoading = signal(false);
   activeProfileTab = signal<'DEPT' | 'ROLES' | 'PERMISSIONS'>('DEPT');
+
+  groupedPermissions = computed(() => {
+    const ctx = this.profileContext();
+    if (!ctx || !ctx.permissions) return [];
+    
+    const groups = new Map<string, any[]>();
+    ctx.permissions.forEach(p => {
+      if (!groups.has(p.systemCode)) {
+        groups.set(p.systemCode, []);
+      }
+      groups.get(p.systemCode)!.push(p);
+    });
+    
+    return Array.from(groups.entries()).map(([systemCode, perms]) => ({
+      systemCode,
+      permissions: perms
+    }));
+  });
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']?.currentValue === true && this.user) {

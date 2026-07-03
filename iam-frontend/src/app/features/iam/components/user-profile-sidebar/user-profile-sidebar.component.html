@@ -78,14 +78,18 @@
 
       <!-- Permissions Tab -->
       <div *ngIf="activeProfileTab() === 'PERMISSIONS'" class="animate-fade-in">
-        <ul class="permission-list" style="list-style: none; padding: 0; margin: 0;"
-          *ngIf="ctx?.permissions?.length">
-          <li *ngFor="let p of ctx.permissions" class="p-3 mt-2"
-            style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 0.25rem;">
-            <strong style="color: #e2e8f0;">{{ p.permissionName }}</strong>
-            <code style="color: #10b981; font-size: 0.85em;">{{ p.systemCode }}:{{ p.permissionCode }}</code>
-          </li>
-        </ul>
+        <div *ngIf="groupedPermissions()?.length">
+          <div *ngFor="let group of groupedPermissions()" class="group-card mt-2 p-3"
+            style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <strong style="color: #e2e8f0; display: block; margin-bottom: 0.5rem;">System: <span style="color: #60a5fa;">{{ group.systemCode }}</span></strong>
+            <ul class="permission-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+              <li *ngFor="let p of group.permissions" style="display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem; background: rgba(255,255,255,0.02); border-radius: 4px;">
+                <strong style="color: #e2e8f0; font-size: 0.95rem;">{{ p.permissionName }}</strong>
+                <code style="color: #10b981; font-size: 0.8em;">{{ p.permissionCode }}</code>
+              </li>
+            </ul>
+          </div>
+        </div>
         <p *ngIf="!ctx?.permissions?.length" class="text-sm"
           style="color: #64748b; font-style: italic;">No permissions aggregated.</p>
       </div>
