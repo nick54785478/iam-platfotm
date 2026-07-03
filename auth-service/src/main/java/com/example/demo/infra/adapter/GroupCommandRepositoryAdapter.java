@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.example.demo.application.domain.group.aggregate.Group;
 import com.example.demo.application.domain.group.aggregate.vo.GroupId;
 import com.example.demo.application.domain.user.aggregate.vo.UserId;
-import com.example.demo.application.port.GroupWriterPort;
+import com.example.demo.application.port.GroupCommandRepositoryPort;
 import com.example.demo.application.domain.shared.event.DomainEvent;
 import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
@@ -20,7 +20,7 @@ import com.example.demo.infra.persistence.repository.GroupRepository;
  * <h2>[基礎設施層 - 適配器] 群組寫入側持久化適配器 (Group Writer Adapter) - 完全體</h2>
  */
 @Component
-public class GroupWriterAdapter implements GroupWriterPort {
+public class GroupCommandRepositoryAdapter implements GroupCommandRepositoryPort {
 
     private final GroupRepository groupRepository;
     private final ApplicationEventPublisher eventPublisher;
