@@ -19,7 +19,7 @@ import com.example.demo.infra.persistence.repository.UserRepository;
 class UserCommandRepositoryAdapter implements UserCommandRepositoryPort {
 
 	private final UserRepository jpaRepository;
-	private final ApplicationEventPublisher eventPublisher; // 👈 搬到這裡
+	private final ApplicationEventPublisher eventPublisher;
 
 	public UserCommandRepositoryAdapter(UserRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
 		this.jpaRepository = jpaRepository;
