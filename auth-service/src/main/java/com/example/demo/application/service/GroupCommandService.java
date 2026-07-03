@@ -20,18 +20,18 @@ import com.example.demo.application.port.UserCommandRepositoryPort;
  * </p>
  */
 @Service
-@Transactional // 🚀 啟動寫入事務，保障群組業務與 Outbox 事件落地的原子性
+@Transactional // 啟動寫入事務，保障群組業務與 Outbox 事件落地的原子性
 public class GroupCommandService {
 
-	private final GroupCommandRepositoryPort groupWriterPort;
-	private final UserCommandRepositoryPort userWriterPort;
-	private final RoleCommandRepositoryPort roleWriterPort;
+	private final GroupCommandRepositoryPort groupRepository;
+	private final UserCommandRepositoryPort userRepository;
+	private final RoleCommandRepositoryPort roleRepository;
 
-	public GroupCommandService(GroupCommandRepositoryPort groupWriterPort, UserCommandRepositoryPort userWriterPort,
-							   RoleCommandRepositoryPort roleWriterPort) {
-		this.groupWriterPort = groupWriterPort;
-		this.userWriterPort = userWriterPort;
-		this.roleWriterPort = roleWriterPort;
+	public GroupCommandService(GroupCommandRepositoryPort groupRepository, UserCommandRepositoryPort userRepository,
+							   RoleCommandRepositoryPort roleRepository) {
+		this.groupRepository = groupRepository;
+		this.userRepository = userRepository;
+		this.roleRepository = roleRepository;
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class GroupCommandService {
 	 */
 	public void createGroup(String groupName, String groupCode) {
 		// 1. 業務規則防禦：群組代碼不可重複
-		if (groupWriterPort.findByGroupCode(groupCode).isPresent()) {
+		if (groupRepository.findByGroupCode(groupCode).isPresent()) {
 			throw new IllegalArgumentException("Group code '" + groupCode + "' already exists in current tenant");
 		}
 
@@ -50,18 +50,18 @@ public class GroupCommandService {
 		Group group = Group.create(groupName, groupCode);
 
 		// 3. 存檔（透過 Adapter 自動將事件打包信封並引爆全局 Outbox 監聽）
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 
 	/**
 	 * <b>群組更名描述</b>
 	 */
 	public void renameGroup(String groupCode, String newName) {
-		Group group = groupWriterPort.findByGroupCode(groupCode)
+		Group group = groupRepository.findByGroupCode(groupCode)
 				.orElseThrow(() -> new IllegalArgumentException("Group code '" + groupCode + "' not found"));
 
 		group.rename(newName);
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 
 	/**
@@ -73,34 +73,34 @@ public class GroupCommandService {
 	 */
 	public void addMemberToGroup(String groupCode, String username) {
 		// 1. 撈出群組聚合根
-		Group group = groupWriterPort.findByGroupCode(groupCode)
+		Group group = groupRepository.findByGroupCode(groupCode)
 				.orElseThrow(() -> new IllegalArgumentException("Group code '" + groupCode + "' not found"));
 
 		// 2. 跨聚合根元數據還原：透過 username 撈出使用者聚合根，藉此取得物理 UserId
-		User user = userWriterPort.findByUsername(username)
+		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new IllegalArgumentException("User '" + username + "' not found"));
 
 		// 3. 驅動群組充血模型行為：將 UserId 弱引用加入成員集合（內部自動去重並註冊變更事件）
 		group.addMember(user.getId());
 
 		// 4. 存檔閉環
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 
 	/**
 	 * <b>🚀 核心編排：將指定使用者移出特定群組 (Remove Member)</b>
 	 */
 	public void removeMemberFromGroup(String groupCode, String username) {
-		Group group = groupWriterPort.findByGroupCode(groupCode)
+		Group group = groupRepository.findByGroupCode(groupCode)
 				.orElseThrow(() -> new IllegalArgumentException("Group code '" + groupCode + "' not found"));
 
-		User user = userWriterPort.findByUsername(username)
+		User user = userRepository.findByUsername(username)
 				.orElseThrow(() -> new IllegalArgumentException("User '" + username + "' not found"));
 
 		// 驅動群組移除成員
 		group.removeMember(user.getId());
 
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 
 	/**
@@ -110,32 +110,32 @@ public class GroupCommandService {
 	 * </p>
 	 */
 	public void assignRoleToGroup(String groupCode, String roleCode) {
-		Group group = groupWriterPort.findByGroupCode(groupCode)
+		Group group = groupRepository.findByGroupCode(groupCode)
 				.orElseThrow(() -> new IllegalArgumentException("Group code '" + groupCode + "' not found"));
 
 		// 跨聚合根元數據還原：透過 roleCode 撈出角色聚合根，藉此取得物理 RoleId
-		Role role = roleWriterPort.findByRoleCode(roleCode)
+		Role role = roleRepository.findByRoleCode(roleCode)
 				.orElseThrow(() -> new IllegalArgumentException("Role code '" + roleCode + "' not found"));
 
 		// 驅動群組指派角色（弱引用 RoleId 入腹）
 		group.assignRole(role.getId());
 
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 
 	/**
 	 * <b>🚀 核心編排：撤銷特定群組的角色 (Revoke Role from Group)</b>
 	 */
 	public void revokeRoleFromGroup(String groupCode, String roleCode) {
-		Group group = groupWriterPort.findByGroupCode(groupCode)
+		Group group = groupRepository.findByGroupCode(groupCode)
 				.orElseThrow(() -> new IllegalArgumentException("Group code '" + groupCode + "' not found"));
 
-		Role role = roleWriterPort.findByRoleCode(roleCode)
+		Role role = roleRepository.findByRoleCode(roleCode)
 				.orElseThrow(() -> new IllegalArgumentException("Role code '" + roleCode + "' not found"));
 
 		// 驅動群組撤銷角色
 		group.revokeRole(role.getId());
 
-		groupWriterPort.save(group);
+		groupRepository.save(group);
 	}
 }
