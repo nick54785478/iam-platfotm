@@ -6,6 +6,7 @@ import com.example.demo.application.shared.dto.DepartmentRootGottenResult;
 import com.example.demo.application.shared.dto.PageQueriedResult;
 import com.example.demo.application.shared.query.GetDepartmentRootQuery;
 import com.example.demo.infra.persistence.DepartmentPersistence;
+import com.example.demo.infra.persistence.DepartmentTreeViewPersistence;
 import com.example.demo.infra.shared.dto.DepartmentRootGottenView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +24,12 @@ import org.springframework.util.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Department Query Adapter (Infrastructure Layer)
@@ -44,6 +50,7 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final DepartmentPersistence departmentPersistence;
+    private final DepartmentTreeViewPersistence departmentTreeViewPersistence;
 
     // 定義 Redis Key 的命名空間
     private static final String KEY_SUBTREE = "read-model:tenant:%s:subtree:%s:incl-disabled:%b";
@@ -268,7 +275,7 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
         );
 
         // 3. 呼叫底層 JPA 儲存庫
-        Page<DepartmentRootGottenView> springPage = departmentPersistence.findTenantRootsWithPage(
+        Page<DepartmentRootGottenView> springPage = departmentTreeViewPersistence.findTenantRootsWithPage(
                 query.tenantId(), safeCode, safeName, pageable
         );
 
@@ -291,5 +298,33 @@ class DepartmentTreeReaderAdapter implements DepartmentTreeReaderPort {
                 springPage.getTotalPages(),
                 springPage.getNumber()
         );
+    }
+
+    @Override
+    public List<DepartmentNode> findUserSubTrees(String tenantId, String employeeId) {
+        // 💡 效能優化建議：如果這支 API 被前端極度頻繁呼叫，你也可以在這裡加上 Redis Cache-Aside 機制
+        // Redis Key 範例： "read-model:tenant:%s:employee-subtree:%s"
+
+        log.info("[CQRS-Query] 🛡️ 穿透至 SQL DB 查詢使用者所屬子樹: Employee [{}]", employeeId);
+
+        String sql = """
+                    SELECT DISTINCT 
+                        dv.tenant_id, dv.id, dv.parent_id, dv.code, dv.name, dv.status, dv.sort_order,
+                        dv.direct_headcount, dv.total_headcount, 
+                        dt.depth -- 這裡取到的是該節點與「員工所屬部門(ancestor)」的距離
+                    FROM department_employees_view dev
+                    JOIN department_tree dt ON dev.department_id = dt.ancestor_id
+                    JOIN department_views dv ON dt.descendant_id = dv.id AND dt.tenant_id = dv.tenant_id
+                    WHERE dev.tenant_id = :tenantId
+                      AND dev.employee_id = :employeeId
+                      AND dv.status != 'DELETED'
+                    ORDER BY dv.sort_order ASC
+                """;
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("tenantId", tenantId)
+                .addValue("employeeId", employeeId);
+
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> mapRowToNode(rs));
     }
 }

@@ -3,6 +3,7 @@ package com.example.demo.application.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -286,6 +287,53 @@ public class DepartmentQueryService {
 
 		// 將查詢派發給基礎設施層的 Adapter 執行
 		return treeReader.getTenantRootNodes(query);
+	}
+
+	/**
+	 * 獲取指定員工的部門樹 (包含其所屬部門及轄下所有子部門)
+	 */
+	public List<DepartmentTreeNodeGottenView> getUserDepartmentTree(String tenantId, String employeeId) {
+
+		// 1. 從 Adapter 取得扁平化的 O(1) JOIN 結果
+		List<DepartmentNode> flatNodes = treeReader.findUserSubTrees(tenantId, employeeId);
+
+		if (flatNodes.isEmpty()) {
+			return List.of();
+		}
+
+		Map<String, DepartmentTreeNodeGottenView> nodeMap = new HashMap<>();
+		List<DepartmentTreeNodeGottenView> rootNodes = new ArrayList<>();
+
+		// 2. 第一次遍歷：實體化所有 Record 視圖並快取入 Map
+		for (DepartmentNode node : flatNodes) {
+			nodeMap.put(node.id(), new DepartmentTreeNodeGottenView(
+					node.tenantId(),
+					node.id(),
+					node.parentId(),
+					node.code(),
+					node.name(),
+					node.status(),
+					node.sortOrder(),
+					node.depth(),
+					node.directHeadcount(),
+					node.totalHeadcount(),
+					new ArrayList<>() // 🌟 關鍵技巧：傳入一個 Mutable 的 ArrayList 以利後續幾何掛載
+			));
+		}
+
+		// 3. 第二次遍歷：依據 parentId 進行幾何掛載 (O(N) 複雜度)
+		for (DepartmentTreeNodeGottenView view : nodeMap.values()) {
+
+			// 若父親為 null，或父親不在這次查詢的結果集內，代表它就是這次顯示範圍的「頂層相對根節點」
+			if (view.parentId() == null || !nodeMap.containsKey(view.parentId())) {
+				rootNodes.add(view);
+			} else {
+				// 將自己掛載到父親的 children 陣列中 (因為前面塞入的是 ArrayList，所以可以 .add)
+				nodeMap.get(view.parentId()).children().add(view);
+			}
+		}
+
+		return rootNodes;
 	}
 
 }

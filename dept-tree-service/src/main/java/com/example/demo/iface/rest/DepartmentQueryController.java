@@ -9,9 +9,11 @@ import com.example.demo.iface.dto.res.DepartmentHierarchyGottenResource;
 import com.example.demo.iface.dto.res.DepartmentRootsGottenResource;
 import com.example.demo.iface.dto.res.DepartmentsSearchedResource;
 import com.example.demo.iface.dto.res.FlatDepartmentsGottenResource;
+import com.example.demo.iface.dto.res.UserDepartmentTreeGottenResource;
 import com.example.demo.infra.shared.dto.DepartmentFlatNodeGottenView;
 import com.example.demo.infra.shared.dto.DepartmentTreeNodeGottenView;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +36,7 @@ import java.util.List;
  * 享受純單表或單次高效 JOIN 的極致讀取效能。
  * </pre>
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/departments")
@@ -146,5 +149,29 @@ public class DepartmentQueryController {
 
         // 3. 回傳標準 HTTP 200 回應
         return ResponseEntity.ok(new DepartmentRootsGottenResource("200", "Success", result));
+    }
+
+    /**
+     * <b>獲取指定使用者的部門樹狀結構 (包含所屬部門與轄下所有子樹)</b>
+     * <p>
+     * <b>使用情境：</b> 前端登入後，透過此 API 取得該同仁可視的組織架構範圍，
+     * 並利用回傳的 children 屬性遞迴渲染樹狀 UI (Tree UI) 或麵包屑導航。
+     * </p>
+     *
+     * @param tenantId   租戶識別碼 (由 Spring Cloud Gateway 解析 JWT 後強制注入，具備絕對信任度)
+     * @param employeeId 欲查詢的目標使用者帳號/工號 (路徑參數)
+     * @return {@code 200 OK} 夾帶已於應用層組裝完畢的 O(1) 樹狀視圖陣列 (若無資料則回傳空陣列)
+     */
+    @GetMapping("/users/{employeeId}/tree")
+    public ResponseEntity<UserDepartmentTreeGottenResource> getUserDepartmentTree(
+            @RequestHeader("X-Tenant-Id") String tenantId,
+            @PathVariable("employeeId") String employeeId) {
+
+        log.info("[CQRS-Query] 接收到獲取使用者部門樹請求, Tenant: {}, Employee: {}", tenantId, employeeId);
+
+        // 呼叫 Application Layer 取得已組裝完成的樹狀視圖
+        List<DepartmentTreeNodeGottenView> tree = queryService.getUserDepartmentTree(tenantId, employeeId);
+
+        return ResponseEntity.ok(new UserDepartmentTreeGottenResource("200", "Success", tree));
     }
 }

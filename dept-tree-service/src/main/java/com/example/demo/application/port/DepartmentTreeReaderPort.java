@@ -82,4 +82,18 @@ public interface DepartmentTreeReaderPort {
      * 傳入高內聚的 Query 物件，回傳去框架化的通用分頁結果。
      */
     PageQueriedResult<DepartmentRootGottenResult> getTenantRootNodes(GetDepartmentRootQuery query);
+
+    /**
+     * 獲取指定使用者所屬的完整部門子樹清單。
+     * <p>
+     * <b>查詢策略：</b>
+     * 先定位該員工所屬的所有部門起點，再利用閉包表 (Closure Table) 展開這些起點向下的所有子孫節點。
+     * 回傳結果已去重 (Distinct)，並以扁平化形式呈現。
+     * </p>
+     *
+     * @param tenantId   租戶識別碼
+     * @param employeeId 目標查詢員工的帳號/識別碼
+     * @return 包含該員工所屬組織與其所有下屬分支的扁平化部門視圖列表
+     */
+    List<DepartmentNode> findUserSubTrees(String tenantId, String employeeId);
 }
