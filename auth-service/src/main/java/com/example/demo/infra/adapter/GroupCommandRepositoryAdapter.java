@@ -20,12 +20,12 @@ import com.example.demo.infra.persistence.repository.GroupRepository;
  * <h2>[基礎設施層 - 適配器] 群組寫入側持久化適配器 (Group Writer Adapter) - 完全體</h2>
  */
 @Component
-public class GroupCommandRepositoryAdapter implements GroupCommandRepositoryPort {
+class GroupCommandRepositoryAdapter implements GroupCommandRepositoryPort {
 
     private final GroupRepository groupRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    public GroupWriterAdapter(GroupRepository groupRepository, ApplicationEventPublisher eventPublisher) {
+    public GroupCommandRepositoryAdapter(GroupRepository groupRepository, ApplicationEventPublisher eventPublisher) {
         this.groupRepository = groupRepository;
         this.eventPublisher = eventPublisher;
     }

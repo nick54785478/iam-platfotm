@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.role.aggregate.vo.Permission;
-import com.example.demo.application.port.RoleWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
 
 
 /**
@@ -21,9 +21,9 @@ import com.example.demo.application.port.RoleWriterPort;
 @Transactional // 🚀 確保全量更新與 Outbox 寫入具備原子性
 public class RoleCommandService {
 
-	private final RoleWriterPort roleWriterPort;
+	private final RoleCommandRepositoryPort roleWriterPort;
 
-	public RoleCommandService(RoleWriterPort roleWriterPort) {
+	public RoleCommandService(RoleCommandRepositoryPort roleWriterPort) {
 		this.roleWriterPort = roleWriterPort;
 	}
 

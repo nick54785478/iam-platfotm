@@ -10,7 +10,7 @@ import com.example.demo.application.domain.user.aggregate.vo.UserId;
 /**
  * <h2>[應用層 - Port 接口] 群組寫入側輸出端口 (Group Writer Port)</h2>
  */
-public interface GroupWriterPort {
+public interface GroupCommandRepositoryPort {
 	Optional<Group> findById(GroupId id);
 
 	/**

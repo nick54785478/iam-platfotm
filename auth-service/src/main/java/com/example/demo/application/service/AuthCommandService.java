@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.application.domain.group.aggregate.Group;
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.domain.user.aggregate.vo.UserStatus;
-import com.example.demo.application.port.GroupWriterPort;
+import com.example.demo.application.port.GroupCommandRepositoryPort;
 import com.example.demo.application.port.PasswordEncoderPort;
-import com.example.demo.application.port.RoleWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
 import com.example.demo.application.port.TokenProviderPort;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 import com.example.demo.application.shared.command.LoginCommand;
 import com.example.demo.infra.context.TenantContext;
 
@@ -22,7 +22,7 @@ import com.example.demo.infra.context.TenantContext;
  * <h2>[應用層 - 服務] 認證命令編排服務 (Auth Command Service) - 終極定版</h2>
  * <p>
  * <b>【核心編排美感】</b>：<br>
- * 本服務完全在寫入側（Command宇宙）閉環。它調用 {@link UserWriterPort} 查詢與還原充血實體， 透過 {@link User}
+ * 本服務完全在寫入側（Command宇宙）閉環。它調用 {@link UserCommandRepositoryPort} 查詢與還原充血實體， 透過 {@link User}
  * 內聚的業務方法控制失敗懲罰與歸零，完全不橫向跨界調用 Query 側服務，死守安全邊界。
  * </p>
  */
@@ -30,15 +30,15 @@ import com.example.demo.infra.context.TenantContext;
 @Transactional // 🚀 啟動寫入事務，保障登入失敗計數與狀態變更具備原子性
 public class AuthCommandService {
 
-	private final UserWriterPort userWriterPort;
-	private final GroupWriterPort groupWriterPort;
-	private final RoleWriterPort roleWriterPort;
+	private final UserCommandRepositoryPort userWriterPort;
+	private final GroupCommandRepositoryPort groupWriterPort;
+	private final RoleCommandRepositoryPort roleWriterPort;
 	private final PasswordEncoderPort passwordEncoderPort;
 	private final TokenProviderPort tokenProviderPort;
 
-	public AuthCommandService(UserWriterPort userWriterPort, GroupWriterPort groupWriterPort,
-			RoleWriterPort roleWriterPort, PasswordEncoderPort passwordEncoderPort,
-			TokenProviderPort tokenProviderPort) {
+	public AuthCommandService(UserCommandRepositoryPort userWriterPort, GroupCommandRepositoryPort groupWriterPort,
+							  RoleCommandRepositoryPort roleWriterPort, PasswordEncoderPort passwordEncoderPort,
+							  TokenProviderPort tokenProviderPort) {
 		this.userWriterPort = userWriterPort;
 		this.groupWriterPort = groupWriterPort;
 		this.roleWriterPort = roleWriterPort;

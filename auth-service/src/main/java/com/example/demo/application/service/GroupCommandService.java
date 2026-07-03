@@ -6,9 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.application.domain.group.aggregate.Group;
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.user.aggregate.User;
-import com.example.demo.application.port.GroupWriterPort;
-import com.example.demo.application.port.RoleWriterPort;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.GroupCommandRepositoryPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 
 /**
  * <h2>[應用層 - 服務] 群組命令編排服務 (Group Command Service)</h2>
@@ -23,12 +23,12 @@ import com.example.demo.application.port.UserWriterPort;
 @Transactional // 🚀 啟動寫入事務，保障群組業務與 Outbox 事件落地的原子性
 public class GroupCommandService {
 
-	private final GroupWriterPort groupWriterPort;
-	private final UserWriterPort userWriterPort;
-	private final RoleWriterPort roleWriterPort;
+	private final GroupCommandRepositoryPort groupWriterPort;
+	private final UserCommandRepositoryPort userWriterPort;
+	private final RoleCommandRepositoryPort roleWriterPort;
 
-	public GroupCommandService(GroupWriterPort groupWriterPort, UserWriterPort userWriterPort,
-			RoleWriterPort roleWriterPort) {
+	public GroupCommandService(GroupCommandRepositoryPort groupWriterPort, UserCommandRepositoryPort userWriterPort,
+							   RoleCommandRepositoryPort roleWriterPort) {
 		this.groupWriterPort = groupWriterPort;
 		this.userWriterPort = userWriterPort;
 		this.roleWriterPort = roleWriterPort;

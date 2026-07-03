@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
-import com.example.demo.application.port.RoleWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
 import com.example.demo.application.domain.shared.event.DomainEvent;
 import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
@@ -22,12 +22,12 @@ import com.example.demo.infra.persistence.repository.RoleRepository;
  * <h2>[基礎設施層 - 適配器] 角色寫入側持久化適配器 (Role Writer Adapter) - 完全體</h2>
  */
 @Component
-public class RoleWriterAdapter implements RoleWriterPort {
+public class RoleCommandRepositoryAdapter implements RoleCommandRepositoryPort {
 
 	private final RoleRepository jpaRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
-	public RoleWriterAdapter(RoleRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
+	public RoleCommandRepositoryAdapter(RoleRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
 		this.jpaRepository = jpaRepository;
 		this.eventPublisher = eventPublisher;
 	}

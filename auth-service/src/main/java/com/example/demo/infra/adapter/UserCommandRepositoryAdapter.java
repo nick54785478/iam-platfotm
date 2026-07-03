@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.domain.user.aggregate.vo.UserId;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 import com.example.demo.application.domain.shared.event.DomainEvent;
 import com.example.demo.application.shared.envelope.TenantEventEnvelope;
 import com.example.demo.infra.context.TenantContext;
@@ -16,12 +16,12 @@ import com.example.demo.infra.persistence.entity.user.UserEntity;
 import com.example.demo.infra.persistence.repository.UserRepository;
 
 @Component
-class UserWriterAdapter implements UserWriterPort {
+class UserCommandRepositoryAdapter implements UserCommandRepositoryPort {
 
 	private final UserRepository jpaRepository;
 	private final ApplicationEventPublisher eventPublisher; // 👈 搬到這裡
 
-	public UserWriterAdapter(UserRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
+	public UserCommandRepositoryAdapter(UserRepository jpaRepository, ApplicationEventPublisher eventPublisher) {
 		this.jpaRepository = jpaRepository;
 		this.eventPublisher = eventPublisher;
 	}

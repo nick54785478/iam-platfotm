@@ -5,8 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.port.PasswordEncoderPort;
-import com.example.demo.application.port.RoleWriterPort;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 import com.example.demo.application.shared.command.RegisterCommand;
 import com.example.demo.infra.context.TenantContext;
 
@@ -17,12 +17,12 @@ import com.example.demo.infra.context.TenantContext;
 @Transactional
 public class UserRegisterCommandService {
 
-	private final UserWriterPort userWriterPort;
-	private final RoleWriterPort roleWriterPort;
+	private final UserCommandRepositoryPort userWriterPort;
+	private final RoleCommandRepositoryPort roleWriterPort;
 	private final PasswordEncoderPort passwordEncoderPort;
 
-	public UserRegisterCommandService(UserWriterPort userWriterPort, RoleWriterPort roleWriterPort,
-			PasswordEncoderPort passwordEncoderPort) {
+	public UserRegisterCommandService(UserCommandRepositoryPort userWriterPort, RoleCommandRepositoryPort roleWriterPort,
+                                      PasswordEncoderPort passwordEncoderPort) {
 		this.userWriterPort = userWriterPort;
 		this.roleWriterPort = roleWriterPort;
 		this.passwordEncoderPort = passwordEncoderPort;

@@ -6,7 +6,7 @@ import java.util.Set;
 import com.example.demo.application.domain.role.aggregate.Role;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 
-public interface RoleWriterPort {
+public interface RoleCommandRepositoryPort {
 
 	Optional<Role> findById(RoleId id);
 

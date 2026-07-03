@@ -5,12 +5,11 @@ import com.example.demo.application.domain.role.aggregate.vo.Permission;
 import com.example.demo.application.domain.role.aggregate.vo.RoleId;
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.port.PasswordEncoderPort;
-import com.example.demo.application.port.RoleWriterPort;
-import com.example.demo.application.port.UserWriterPort;
+import com.example.demo.application.port.RoleCommandRepositoryPort;
+import com.example.demo.application.port.UserCommandRepositoryPort;
 import com.example.demo.infra.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +27,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class TenantOnboardingCommandService {
 
-    private final UserWriterPort userWriterPort;
-    private final RoleWriterPort roleWriterPort;
+    private final UserCommandRepositoryPort userWriterPort;
+    private final RoleCommandRepositoryPort roleWriterPort;
     private final PasswordEncoderPort passwordEncoder;
 
     private static final String TENANT_ROOT_ROLE_CODE = "TENANT_ROOT_ADMIN";

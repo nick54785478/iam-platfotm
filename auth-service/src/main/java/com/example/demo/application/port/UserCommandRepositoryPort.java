@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.example.demo.application.domain.user.aggregate.User;
 import com.example.demo.application.domain.user.aggregate.vo.UserId;
 
-public interface UserWriterPort {
+public interface UserCommandRepositoryPort {
 	
 	Optional<User> findById(UserId id);
 
