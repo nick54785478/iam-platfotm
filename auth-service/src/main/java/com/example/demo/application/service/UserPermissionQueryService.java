@@ -1,10 +1,15 @@
 package com.example.demo.application.service;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import com.example.demo.application.shared.dto.RoleRepresentation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +23,7 @@ import com.example.demo.application.shared.dto.UserPermissionContextRepresentati
 import com.example.demo.application.shared.dto.UserRepresentation;
 import com.example.demo.infra.context.TenantContext;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 public class UserPermissionQueryService {
@@ -35,47 +41,93 @@ public class UserPermissionQueryService {
 
 	public UserPermissionContextRepresentation getUserPermissionContext(String username) {
 		String currentTenantId = TenantContext.getCurrentTenantId();
+		log.debug("[Permission-Query] 開始組裝使用者權限上下文: {}", username);
 
-		// 1. 透過 Port 獲取用戶 Representation (內含個人持有的角色代碼)
+		// 1. 獲取用戶 Representation (內含個人角色，可能混雜 UUID 與 Code)
 		UserRepresentation userDto = userReaderPort.fetchByUsername(currentTenantId, username)
 				.orElseThrow(() -> new IllegalArgumentException("User '" + username + "' not found"));
+		String userIdStr = userDto.id();
 
-		String userIdStr = userDto.id().toString();
-		Set<String> personalRoles = userDto.roles();
+		// 2. 獲取所屬群組 (內含群組角色，可能混雜 UUID 與 Code)
+		List<GroupRepresentation> userBelongedGroups = groupReaderPort.fetchAllByTenant(currentTenantId)
+				.stream()
+				.filter(g -> g.memberUserIds().contains(userIdStr))
+				.toList();
 
-		// 2. 透過 Port 獲取該租戶全量群組 DTO，並在記憶體內高效過濾
-		List<GroupRepresentation> allGroups = groupReaderPort.fetchAllByTenant(currentTenantId);
+		// =====================================================================
+		// 步驟 3：[防禦性收集] 掃描所有 Role 字串，將 UUID 挑出準備批次查詢
+		// =====================================================================
+		Set<UUID> uuidsToFetch = new HashSet<>();
 
-		List<GroupRepresentation> userBelongedGroups = allGroups.stream()
-				.filter(g -> g.memberUserIds().contains(userIdStr)).toList();
-
-		// 3. 收集與聚合所有涉及的角色代碼契約
-		Set<String> allTargetRoleCodes = new HashSet<>(personalRoles);
-		Set<GroupRoleInfo> groupRoleInfos = new HashSet<>();
-
+		for (String roleStr : userDto.roles()) {
+			try { uuidsToFetch.add(UUID.fromString(roleStr)); } catch (IllegalArgumentException ignored) {}
+		}
 		for (GroupRepresentation g : userBelongedGroups) {
-			Set<String> groupRoleCodes = new HashSet<>();
-
-			// 🚀 完美對流：拿著 UUID 透過 Port 換回人類可讀 Role
-			g.assignedRoleIds().forEach(roleIdUuidStr -> {
-				roleReaderPort.fetchByUuid(currentTenantId, UUID.fromString(roleIdUuidStr))
-						.ifPresent(roleDto -> groupRoleCodes.add(roleDto.roleCode()));
-			});
-
-			allTargetRoleCodes.addAll(groupRoleCodes);
-			groupRoleInfos.add(new GroupRoleInfo(g.groupCode(), g.groupName(), groupRoleCodes));
+			for (String roleStr : g.assignedRoleIds()) {
+				try { uuidsToFetch.add(UUID.fromString(roleStr)); } catch (IllegalArgumentException ignored) {}
+			}
 		}
 
-		// 4. 🚀 記憶體聯集去重：撈取這些角色的權限，由 Set 特性自動 Union 完成！
+		// =====================================================================
+		// 步驟 4：[批次轉譯] 透過 Port 一口氣撈回 UUID 對應的 Role Code
+		// =====================================================================
+		Map<String, String> uuidToCodeMap = new HashMap<>();
+		if (!uuidsToFetch.isEmpty()) {
+			roleReaderPort.fetchByUuids(currentTenantId, uuidsToFetch).forEach(role ->
+					uuidToCodeMap.put(role.id(), role.roleCode())
+			);
+		}
+
+		// =====================================================================
+		// 步驟 5：[幾何組裝] 將原始混雜的字串，全部淨化為純淨的 Role Code
+		// =====================================================================
+		Set<String> cleanPersonalRoleCodes = new HashSet<>();
+		for (String roleStr : userDto.roles()) {
+			if (uuidToCodeMap.containsKey(roleStr)) {
+				cleanPersonalRoleCodes.add(uuidToCodeMap.get(roleStr));
+			} else {
+				// 如果是 UUID 但 DB 找不到 (幽靈關聯)，拋棄；否則視為明文 Code (如 ADMIN) 保留
+				try { UUID.fromString(roleStr); } catch (IllegalArgumentException e) { cleanPersonalRoleCodes.add(roleStr); }
+			}
+		}
+
+		Set<GroupRoleInfo> groupRoleInfos = new HashSet<>();
+		for (GroupRepresentation g : userBelongedGroups) {
+			Set<String> cleanGroupRoleCodes = new HashSet<>();
+			for (String roleStr : g.assignedRoleIds()) {
+				if (uuidToCodeMap.containsKey(roleStr)) {
+					cleanGroupRoleCodes.add(uuidToCodeMap.get(roleStr));
+				} else {
+					try { UUID.fromString(roleStr); } catch (IllegalArgumentException e) { cleanGroupRoleCodes.add(roleStr); }
+				}
+			}
+			groupRoleInfos.add(new GroupRoleInfo(g.groupCode(), g.groupName(), cleanGroupRoleCodes));
+		}
+
+		// =====================================================================
+		// 步驟 6：[聯集查權限] 聚合所有的 Role Code，利用 flatMap 進行最後的極速查詢
+		// =====================================================================
+		Set<String> allTargetRoleCodes = new HashSet<>(cleanPersonalRoleCodes);
+		groupRoleInfos.forEach(gri -> allTargetRoleCodes.addAll(gri.roleCodes()));
+
 		Set<PermissionDto> finalPermissions = new HashSet<>();
-		for (String roleCode : allTargetRoleCodes) {
-			roleReaderPort.fetchByRoleCode(currentTenantId, roleCode).ifPresent(roleDto -> {
-				roleDto.permissions().forEach(p -> finalPermissions
-						.add(new PermissionDto(p.systemCode(), p.permissionCode(), p.permissionName())));
-			});
+		if (!allTargetRoleCodes.isEmpty()) {
+			List<RoleRepresentation> rolesWithPermissions = roleReaderPort.fetchByRoleCodes(currentTenantId, allTargetRoleCodes);
+
+			finalPermissions = rolesWithPermissions.stream()
+					.flatMap(role -> role.permissions().stream())
+					.map(p -> new PermissionDto(p.systemCode(), p.permissionCode(), p.permissionName()))
+					.collect(Collectors.toSet());
 		}
 
-		return new UserPermissionContextRepresentation(userDto.username(), userDto.email(), userDto.status(),
-				personalRoles, groupRoleInfos, finalPermissions);
+		// 7. 封裝並回傳
+		return new UserPermissionContextRepresentation(
+				userDto.username(),
+				userDto.email(),
+				userDto.status(),
+				cleanPersonalRoleCodes,
+				groupRoleInfos,
+				finalPermissions
+		);
 	}
 }

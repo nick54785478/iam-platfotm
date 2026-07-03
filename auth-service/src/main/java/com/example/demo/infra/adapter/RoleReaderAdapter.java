@@ -5,11 +5,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.example.demo.application.shared.dto.PermissionDto;
+import com.example.demo.infra.persistence.entity.role.RoleEntity;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.application.port.RoleReaderPort;
 import com.example.demo.application.shared.dto.RoleRepresentation;
-import com.example.demo.application.shared.dto.RoleRepresentation.PermissionDto;
 import com.example.demo.infra.projection.repository.RoleViewRepository;
 import com.example.demo.infra.projection.view.RoleView;
 
@@ -42,6 +43,25 @@ class RoleReaderAdapter implements RoleReaderPort {
 	public Optional<RoleRepresentation> fetchByUuid(String tenantId, UUID roleId) {
 		// 🚀 實作：利用租戶與物理主鍵，精準打擊 role_view
 		return viewRepository.findByTenantIdAndId(tenantId, roleId).map(this::toRepresentation);
+	}
+
+	@Override
+	public List<RoleRepresentation> fetchByUuids(String tenantId, Set<UUID> roleIds) {
+		if (roleIds == null || roleIds.isEmpty()) {
+			return List.of();
+		}
+		// 呼叫你定義好的 Repository 方法
+		List<RoleView> entities = viewRepository.findByTenantIdAndIdIn(tenantId, roleIds);
+		return entities.stream().map(this::toRepresentation).toList();
+	}
+
+	@Override
+	public List<RoleRepresentation> fetchByRoleCodes(String tenantId, Set<String> roleCodes) {
+		if (roleCodes == null || roleCodes.isEmpty()) {
+			return List.of();
+		}
+		List<RoleView> entities = viewRepository.findByTenantIdAndRoleCodeIn(tenantId, roleCodes);
+		return entities.stream().map(this::toRepresentation).toList();
 	}
 
 	private RoleRepresentation toRepresentation(RoleView view) {

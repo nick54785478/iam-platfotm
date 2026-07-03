@@ -2,8 +2,10 @@ package com.example.demo.infra.projection.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
+import com.example.demo.infra.persistence.entity.role.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,4 +30,9 @@ public interface RoleViewRepository extends JpaRepository<RoleView, UUID> {
 	 * 查詢特定租戶下的所有角色視圖清單 (Read List)
 	 */
 	List<RoleView> findByTenantId(String tenantId);
+
+	List<RoleView> findByTenantIdAndIdIn(String currentTenantId, Set<UUID> uuids);
+
+	List<RoleView> findByTenantIdAndRoleCodeIn(String currentTenantId, Set<String> roleCodes);
+
 }
