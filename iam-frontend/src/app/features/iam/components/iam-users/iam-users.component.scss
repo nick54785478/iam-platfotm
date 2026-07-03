@@ -31,5 +31,74 @@
   margin-bottom: 4px;
 }
 
+/* --- TabView Glassmorphism Styling --- */
+::ng-deep .glass-tabs {
+  .p-tabview-nav {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    
+    li {
+      background: transparent !important;
+      border: none !important;
+      
+      .p-tabview-nav-link {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+        padding: 1rem 1.25rem !important;
+        transition: all 0.2s ease;
+        box-shadow: none !important;
+      }
 
+      &:not(.p-highlight):hover .p-tabview-nav-link {
+        color: #e2e8f0 !important;
+        border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+      }
+      
+      &.p-highlight .p-tabview-nav-link {
+        color: #60a5fa !important;
+        border-bottom-color: #60a5fa !important;
+      }
+    }
+  }
 
+  .p-tabview-panels {
+    background: transparent !important;
+    border: none !important;
+    padding: 1.5rem 0 0 0 !important;
+    color: #cbd5e1 !important;
+  }
+}
+
+/* --- Custom Tabs Styling --- */
+.custom-tabs-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: #cbd5e1;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  &.active {
+    color: #60a5fa;
+    border-bottom-color: #60a5fa;
+  }
+}

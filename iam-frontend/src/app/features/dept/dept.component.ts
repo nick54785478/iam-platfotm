@@ -344,7 +344,7 @@ export class DeptComponent implements OnInit {
         if (res && res.code === '200' || res && !res.code) {
           this.systemMessageService.showSuccess('Success', `Department created successfully`);
         }
-        
+
         const parentId = parent ? parent.id : null;
         const newNode: DepartmentTreeNode = {
           id: this.newDeptId.toUpperCase(),
@@ -413,7 +413,7 @@ export class DeptComponent implements OnInit {
             if (n.children) n.children.forEach(findAndDisable);
           };
           this.rootNodes().forEach(findAndDisable);
-          
+
           setTimeout(() => {
             this.refreshCurrentView();
           }, 800);

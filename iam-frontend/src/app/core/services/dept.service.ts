@@ -51,9 +51,10 @@ export interface DepartmentTemporalState {
   code: string;
   name: string;
   status: string;
-  activeEmployeeCount: number;
-  version: number;
-  lastModifiedAt: string;
+  activeEmployeeCount?: number;
+  version?: number;
+  lastModifiedAt?: string;
+  lastModifiedBy?: string;
 }
 
 @Injectable({
@@ -135,6 +136,12 @@ export class DeptService {
 
   getHierarchy(departmentId: string): Observable<any> {
     return this.http.get<any>(`${environment.apiEndpoint}/departments/${departmentId}/hierarchy`);
+  }
+
+  getUserDepartmentTree(tenantId: string, employeeId: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiEndpoint}/departments/users/${employeeId}/tree`, {
+      headers: { 'X-Tenant-Id': tenantId }
+    });
   }
 
   // --- Department Temporal/Time-travel Queries ---

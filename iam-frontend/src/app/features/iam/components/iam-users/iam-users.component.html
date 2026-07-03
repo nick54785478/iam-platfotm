@@ -28,6 +28,8 @@
           </td>
           <td>
             <div class="action-buttons">
+              <p-button icon="pi pi-id-card" [rounded]="true" [text]="true" severity="info"
+                (click)="viewUserProfile(user)" title="View Profile Context"></p-button>
               <p-button icon="pi pi-key" [rounded]="true" [text]="true" (click)="openAssignRoleUserModal(user)"
                 title="Assign Role"></p-button>
               <p-button *ngIf="user.status === 'ACTIVE'" icon="pi pi-ban" [rounded]="true" [text]="true"
@@ -42,7 +44,8 @@
 
 <!-- Create User Modal -->
 <p-dialog [draggable]="false" header="Create Member" [visible]="showAddUserModal()"
-  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog" appendTo="body">
+  (visibleChange)="!$event && closeModals()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog"
+  appendTo="body">
   <form (ngSubmit)="onCreateUser()" #userForm="ngForm">
     <div class="form-group p-fluid">
       <label class="form-label">Username</label>
@@ -82,3 +85,6 @@
     <p-button label="Confirm Assign" (click)="onAssignRoleToUserSubmit()" styleClass="glow-button"></p-button>
   </div>
 </p-dialog>
+
+<!-- User Profile Context Sidebar Component -->
+<app-user-profile-sidebar [visible]="showProfileSidebar()" (visibleChange)="!$event && closeModals()" [user]="profileUserTarget()"></app-user-profile-sidebar>

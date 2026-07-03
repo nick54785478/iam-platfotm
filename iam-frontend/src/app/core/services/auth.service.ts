@@ -11,10 +11,26 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export interface UserPermissionContext {
+export interface GroupRoleInfo {
+  groupCode: string;
+  groupName: string;
+  roleCodes: string[];
+}
+
+export interface PermissionDto {
+  systemCode: string;
+  permissionCode: string;
+  permissionName: string;
+}
+
+export interface UserPermissionContextRepresentation {
   username: string;
-  roles: string[];
-  permissions: string[];
+  email: string;
+  status: string;
+  personalRoles: string[];
+  groupRoles: GroupRoleInfo[];
+  permissions: PermissionDto[];
+  departments?: string[];
 }
 
 export interface UserRepresentation {
@@ -93,13 +109,17 @@ export class AuthService {
     this.isAuthenticated.set(false);
   }
 
-  loadPermissionsContext(username: string): Observable<ApiResponse<UserPermissionContext>> {
-    return this.http.get<ApiResponse<UserPermissionContext>>(`${environment.apiEndpoint}/users/${username}/permissions-context`).pipe(
+  getUserPermissionsContext(username: string): Observable<ApiResponse<UserPermissionContextRepresentation>> {
+    return this.http.get<ApiResponse<UserPermissionContextRepresentation>>(`${environment.apiEndpoint}/users/${username}/permissions-context`);
+  }
+
+  loadPermissionsContext(username: string): Observable<ApiResponse<UserPermissionContextRepresentation>> {
+    return this.getUserPermissionsContext(username).pipe(
       tap(res => {
         if (res.data) {
-          const context: UserPermissionContext = res.data;
-          this.userRoles.set(context.roles || []);
-          this.userPermissions.set(context.permissions || []);
+          const context = res.data;
+          this.userRoles.set(context.personalRoles || []);
+          this.userPermissions.set((context.permissions || []).map(p => p.permissionCode));
         }
       })
     );

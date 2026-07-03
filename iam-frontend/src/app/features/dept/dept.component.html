@@ -189,12 +189,12 @@
 
           <!-- Time Machine Snapshot State Box -->
           <div class="temporal-state-box mt-3" *ngIf="temporalState()">
-            <h5>定格歷史狀態快照 (Version: {{ temporalState()?.version }})</h5>
+            <h5>定格歷史狀態快照 (Version: {{ sliderIndex() + 1 }})</h5>
             <div class="state-fields mt-2">
               <div><strong>Name:</strong> {{ temporalState()?.name }}</div>
               <div><strong>Code:</strong> <code>{{ temporalState()?.code }}</code></div>
               <div><strong>Status:</strong> {{ temporalState()?.status }}</div>
-              <div><strong>Employee 編制數:</strong> {{ temporalState()?.activeEmployeeCount }}</div>
+              <div *ngIf="temporalState()?.lastModifiedBy"><strong>Last Modified By:</strong> {{ temporalState()?.lastModifiedBy }}</div>
             </div>
             <p-button *ngIf="temporalState()?.status === 'DISABLED' || node.status === 'DISABLED'" label="🕒 觸發時光機復活 (Undelete)" (click)="onRestoreDept()" styleClass="w-full mt-3 glow-button" [style]="{'width':'100%'}"></p-button>
           </div>
@@ -211,7 +211,7 @@
                 <div class="timeline-dot"></div>
                 <div class="timeline-meta">
                   <div class="event-type"><strong>{{ ev.eventType }}</strong></div>
-                  <div class="event-details">By: {{ ev.operatorId }} | Version: {{ ev.version }}</div>
+                  <div class="event-details">By: {{ ev.operator || ev.operatorId }} | Version: {{ i + 1 }}</div>
                   <div class="event-time">{{ ev.occurredAt | date:'short' }}</div>
                 </div>
               </div>

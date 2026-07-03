@@ -1,13 +1,19 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService, UserRepresentation, RoleRepresentation } from '../../../../core/services/auth.service';
+import { AuthService, UserRepresentation, RoleRepresentation, UserPermissionContextRepresentation } from '../../../../core/services/auth.service';
+import { DeptService } from '../../../../core/services/dept.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { SidebarModule } from 'primeng/sidebar';
+import { TabViewModule } from 'primeng/tabview';
+import { UserProfileSidebarComponent } from '../user-profile-sidebar/user-profile-sidebar.component';
 
 @Component({
   selector: 'app-iam-users',
@@ -19,13 +25,17 @@ import { PasswordModule } from 'primeng/password';
     ButtonModule,
     DialogModule,
     InputTextModule,
-    PasswordModule
+    PasswordModule,
+    SidebarModule,
+    TabViewModule,
+    UserProfileSidebarComponent
   ],
   templateUrl: './iam-users.component.html',
   styleUrl: './iam-users.component.scss'
 })
 export class IamUsersComponent implements OnInit {
   private readonly authService = inject(AuthService);
+  private readonly deptService = inject(DeptService);
 
   users = signal<UserRepresentation[]>([]);
   roles = signal<RoleRepresentation[]>([]);
@@ -39,6 +49,10 @@ export class IamUsersComponent implements OnInit {
   // Assign Role User Modal
   roleUserTarget = signal<UserRepresentation | null>(null);
   selectedRoleCode = '';
+
+  // User Profile Context
+  showProfileSidebar = signal(false);
+  profileUserTarget = signal<UserRepresentation | null>(null);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -127,9 +141,15 @@ export class IamUsersComponent implements OnInit {
     }
   }
 
+  viewUserProfile(user: UserRepresentation): void {
+    this.profileUserTarget.set(user);
+    this.showProfileSidebar.set(true);
+  }
+
   closeModals(): void {
     this.showAddUserModal.set(false);
     this.roleUserTarget.set(null);
+    this.showProfileSidebar.set(false);
   }
 
   private mockUsers(): UserRepresentation[] {
