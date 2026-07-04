@@ -157,4 +157,17 @@ export class DeptService {
   getCurrentState(tenantId: string, id: string): Observable<DepartmentTemporalState> {
     return this.http.get<DepartmentTemporalState>(`${environment.apiEndpoint}/departments/${tenantId}/${id}/state/current`);
   }
+
+  // --- Department Permission Commands ---
+  definePermission(tenantId: string, operator: string, payload: { code: string; name: string; description: string; module: string }): Observable<any> {
+    return this.http.post<any>(`${environment.apiEndpoint}/departments/permissions`, payload, {
+      headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator }
+    });
+  }
+
+  updatePermissionDetails(tenantId: string, operator: string, code: string, payload: { name: string; description: string; module: string }): Observable<any> {
+    return this.http.put<any>(`${environment.apiEndpoint}/departments/permissions/${code}`, payload, {
+      headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator }
+    });
+  }
 }

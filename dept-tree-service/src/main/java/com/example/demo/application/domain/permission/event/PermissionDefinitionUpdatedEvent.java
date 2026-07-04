@@ -17,16 +17,19 @@ public class PermissionDefinitionUpdatedEvent extends DomainEvent {
     private String name;
     private String description;
     private String module;
+    private Long version;
 
     public PermissionDefinitionUpdatedEvent(
             String tenantId, String permissionId, String code,
-            String name, String description, String module, String operator) {
+            String name, String description, String module,
+            String operator, Long version) { // 👈 建構子要求傳入版本號
         super(tenantId, operator);
         this.permissionId = permissionId;
         this.code = code;
         this.name = name;
         this.description = description;
         this.module = module;
+        this.version = version; // 👈 賦值
     }
 
     @Override

@@ -16,6 +16,7 @@ export const routes: Routes = [
       { path: 'org-tree', component: DeptComponent },
       { path: 'iam', component: IamComponent },
       { path: 'tenants', component: TenantComponent },
+      { path: 'dept-permissions', loadComponent: () => import('./features/dept/components/dept-permissions/dept-permissions.component').then(m => m.DeptPermissionsComponent) },
       { path: '', redirectTo: 'org-tree', pathMatch: 'full' }
     ]
   },

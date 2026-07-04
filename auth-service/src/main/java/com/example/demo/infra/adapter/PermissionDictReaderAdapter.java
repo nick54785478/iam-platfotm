@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -22,13 +23,17 @@ public class PermissionDictReaderAdapter implements PermissionDictReaderPort {
     private final PermissionDictViewRepository repository;
 
     @Override
-    @Transactional(readOnly = true) // 🌟 唯讀交易優化，不產生 Hibernate Dirty Checking 開銷
+    @Transactional(readOnly = true)
     public List<PermissionDictGottenResult> searchPermissions(String tenantId, String module, String keyword) {
 
         log.debug("[CQRS-Query] 執行權限字典查詢. Tenant: {}, Module: {}, Keyword: {}",
                 tenantId, module, keyword);
 
-        return repository.searchByCriteria(tenantId, module, keyword)
+        // 🌟 核心修復：在 Java 層預先組裝 Wildcard。若傳入 null，則替換為 "%%" (全匹配)
+        // 這樣 JDBC 就會傳遞明確的 String 型別給 PostgreSQL，徹底消滅 lower(bytea) 型別推斷錯誤！
+        String keywordPattern = StringUtils.hasText(keyword) ? "%" + keyword.trim() + "%" : "%%";
+
+        return repository.searchByCriteria(tenantId, module, keywordPattern)
                 .stream()
                 .map(po -> new PermissionDictGottenResult(
                         po.getId(),

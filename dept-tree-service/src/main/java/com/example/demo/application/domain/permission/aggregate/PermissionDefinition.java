@@ -176,10 +176,13 @@ public class PermissionDefinition extends BaseAggregateRoot {
         changeDetailsInternal(newName, newDescription, newModule);
         touch(operator);
 
+        // 在發射事件前，讓記憶體內的版本號明確手動 +1
+        this.version++;
+
         // 發布更新事件，通知 AuthService 同步最新的名稱、描述與模組歸類
         raise(new PermissionDefinitionUpdatedEvent(
                 this.tenantId.getValue(), this.id.getValue(), this.code.getValue(),
-                newName, newDescription, newModule, operator
+                newName, newDescription, newModule, operator, version
         ));
     }
 

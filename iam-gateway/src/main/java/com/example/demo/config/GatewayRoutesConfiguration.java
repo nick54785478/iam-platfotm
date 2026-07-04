@@ -44,7 +44,8 @@ public class GatewayRoutesConfiguration {
                 .and(route("auth-admin-route")
                         .route(path("/api/users/**")
                                 .or(path("/api/roles/**"))
-                                .or(path("/api/groups/**")), http())
+                                .or(path("/api/groups/**"))
+                                .or(path("/api/permissions/**")), http())
                         .filter(rateLimitFactory.ipRateLimiter("auth-admin", 10, 10))
                         .filter(circuitBreaker("authCircuitBreaker", URI.create("forward:/fallback/auth")))
                         .before(uri("http://localhost:8080"))
@@ -87,14 +88,14 @@ public class GatewayRoutesConfiguration {
 
                     // 若有 tenantId，代表此請求已通過 JWT 驗證
                     if (tenantId != null) {
-                        // 🚀 終極資安修復：使用 .set() 強制覆寫，防堵 Header 疊加 (WPG,WPG) 與惡意竄改
+                        // 終極資安修復：使用 .set() 強制覆寫，防堵 Header 疊加 (WPG,WPG) 與惡意竄改
                         ServerRequest mutatedRequest = ServerRequest.from(request)
                                 .headers(httpHeaders -> {
                                     httpHeaders.set("X-Tenant-Id", tenantId);
                                     httpHeaders.set("X-User-Id", userId != null ? userId : "");
                                     httpHeaders.set("X-User-Permissions", permissions != null ? permissions : "");
 
-                                    // 💡 零信任架構：拔除原始 JWT Token，確保下游微服務只能依賴網關驗證過的資訊
+                                    // 零信任架構：拔除原始 JWT Token，確保下游微服務只能依賴網關驗證過的資訊
                                     httpHeaders.remove("Authorization");
                                 })
                                 .build();

@@ -1,0 +1,78 @@
+<div class="list-section glass-panel animate-fade-in" style="margin: 1.5rem; padding: 1.5rem;">
+  <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h3>Department Service Permissions</h3>
+      <p style="color: var(--text-secondary); margin-top: 0.25rem;">Manage the permission definitions for the Department module.</p>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <span class="p-input-icon-left">
+        <input pInputText type="text" placeholder="Search..." [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" />
+      </span>
+      <p-button label="Define Permission" icon="pi pi-plus" (click)="openCreateModal()" styleClass="glow-button"></p-button>
+    </div>
+  </div>
+  
+  <div class="table-container mt-4">
+    <p-table [value]="permissions()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Module</th>
+          <th>Description</th>
+          <th style="width: 100px; text-align: center;">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-perm>
+        <tr>
+          <td><code>{{ perm.code }}</code></td>
+          <td>{{ perm.name }}</td>
+          <td><span class="mini-badge">{{ perm.module }}</span></td>
+          <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="perm.description || ''">
+            {{ perm.description }}
+          </td>
+          <td style="text-align: center;">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="openEditModal(perm)" title="Edit"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2rem;">No permissions found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Modal -->
+<p-dialog [header]="isEditMode() ? 'Edit Permission' : 'Define New Permission'" [visible]="showModal()"
+  (visibleChange)="!$event && closeModal()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog"
+  appendTo="body">
+  <form (ngSubmit)="onSubmit()" #permForm="ngForm">
+    <div class="form-group p-fluid">
+      <label class="form-label">Permission Code (Immutable)</label>
+      <input pInputText [(ngModel)]="permCode" name="permCode" required [disabled]="isEditMode()" placeholder="e.g. dept-service:ADMIN" />
+    </div>
+    
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Display Name</label>
+      <input pInputText [(ngModel)]="permName" name="permName" required placeholder="e.g. Admin Access" />
+    </div>
+
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Module Classification</label>
+      <input pInputText [(ngModel)]="permModule" name="permModule" required placeholder="e.g. Department" />
+    </div>
+    
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Description</label>
+      <textarea pInputTextarea [(ngModel)]="permDesc" name="permDesc" rows="3" placeholder="Explain what this permission allows..."></textarea>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+      <p-button label="Cancel" severity="secondary" (click)="closeModal()"></p-button>
+      <p-button label="Save" type="submit" [disabled]="permForm.invalid" styleClass="glow-button"></p-button>
+    </div>
+  </form>
+</p-dialog>

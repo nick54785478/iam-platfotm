@@ -1,5 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
@@ -128,7 +128,7 @@ export class AuthService {
   // ==========================================
   // ── User Management (UserController) ──────
   // ==========================================
-  
+
   getUsers(): Observable<ApiResponse<UserRepresentation[]>> {
     return this.http.get<ApiResponse<UserRepresentation[]>>(`${environment.apiEndpoint}/users`);
   }
@@ -153,6 +153,10 @@ export class AuthService {
     return this.http.delete<ApiResponse<any>>(`${environment.apiEndpoint}/users/${username}`);
   }
 
+  reactivateUser(username: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiEndpoint}/users/${username}/reactivate`, {});
+  }
+
   assignRoleToUser(username: string, roleCode: string): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${environment.apiEndpoint}/users/${username}/roles/${roleCode}`, {});
   }
@@ -160,7 +164,7 @@ export class AuthService {
   // ==========================================
   // ── Role Management (RoleController) ──────
   // ==========================================
-  
+
   getRoles(): Observable<ApiResponse<RoleRepresentation[]>> {
     return this.http.get<ApiResponse<RoleRepresentation[]>>(`${environment.apiEndpoint}/roles`);
   }
@@ -184,7 +188,7 @@ export class AuthService {
   // ==========================================
   // ── Group Management (GroupController) ────
   // ==========================================
-  
+
   getGroups(): Observable<ApiResponse<GroupRepresentation[]>> {
     return this.http.get<ApiResponse<GroupRepresentation[]>>(`${environment.apiEndpoint}/groups`);
   }
@@ -215,5 +219,19 @@ export class AuthService {
 
   revokeRoleFromGroup(groupCode: string, roleCode: string): Observable<ApiResponse<any>> {
     return this.http.delete<ApiResponse<any>>(`${environment.apiEndpoint}/groups/${groupCode}/roles/${roleCode}`);
+  }
+
+  // ==========================================
+  // ── Permission Dictionary Query ───────────
+  // ==========================================
+
+  getPermissionsDict(tenantId: string, module?: string, keyword?: string): Observable<ApiResponse<any[]>> {
+    let params = new HttpParams();
+    if (module) params = params.set('module', module);
+    if (keyword) params = params.set('keyword', keyword);
+    return this.http.get<ApiResponse<any[]>>(`${environment.apiEndpoint}/permissions/dict`, {
+      headers: { 'X-Tenant-Id': tenantId },
+      params
+    });
   }
 }

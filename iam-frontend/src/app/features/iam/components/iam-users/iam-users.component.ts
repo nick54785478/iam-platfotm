@@ -114,6 +114,17 @@ export class IamUsersComponent implements OnInit {
     });
   }
 
+  onReactivateUser(username: string): void {
+    this.authService.reactivateUser(username).subscribe({
+      next: () => this.loadUsers(),
+      error: () => {
+        this.users.set(this.users().map(u =>
+          u.username === username ? { ...u, status: 'ACTIVE' } : u
+        ));
+      }
+    });
+  }
+
   openAssignRoleUserModal(user: UserRepresentation): void {
     this.roleUserTarget.set(user);
     this.selectedRoleCode = this.roles()[0]?.roleCode || '';

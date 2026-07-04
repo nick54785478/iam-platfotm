@@ -34,6 +34,8 @@
                 title="Assign Role"></p-button>
               <p-button *ngIf="user.status === 'ACTIVE'" icon="pi pi-ban" [rounded]="true" [text]="true"
                 severity="danger" (click)="onDeactivateUser(user.username)" title="Deactivate"></p-button>
+              <p-button *ngIf="user.status === 'DEACTIVATED'" icon="pi pi-check-circle" [rounded]="true" [text]="true"
+                severity="success" (click)="onReactivateUser(user.username)" title="Reactivate"></p-button>
             </div>
           </td>
         </tr>

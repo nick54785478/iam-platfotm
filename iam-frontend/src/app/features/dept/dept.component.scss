@@ -28,10 +28,12 @@
   grid-template-columns: 1.2fr 1fr;
   gap: 25px;
   flex-grow: 1;
-  height: 0; /* allows grid scrolling */
+  height: 0;
+  /* allows grid scrolling */
 }
 
-.tree-pane, .inspector-pane {
+.tree-pane,
+.inspector-pane {
   padding: 25px;
   display: flex;
   flex-direction: column;
@@ -47,7 +49,8 @@
   padding-right: 5px;
 }
 
-.empty-state, .empty-inspector {
+.empty-state,
+.empty-inspector {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -408,11 +411,15 @@
   color: var(--text-muted);
 }
 
-::ng-deep .glass-dialog .p-dialog-header, ::ng-deep .glass-dialog .p-dialog-content, ::ng-deep .glass-dialog .p-dialog-footer {
+::ng-deep .glass-dialog .p-dialog-header,
+::ng-deep .glass-dialog .p-dialog-content,
+::ng-deep .glass-dialog .p-dialog-footer {
   background: var(--bg-primary);
   color: var(--text-primary);
 }
-::ng-deep .p-inputtext, ::ng-deep .p-password input {
+
+::ng-deep .p-inputtext,
+::ng-deep .p-password input {
   width: 100%;
   background: rgba(15, 23, 42, 0.5) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -420,7 +427,9 @@
   border-radius: var(--radius-md) !important;
   transition: all 0.2s ease !important;
 }
-::ng-deep .p-inputtext:focus, ::ng-deep .p-password input:focus {
+
+::ng-deep .p-inputtext:focus,
+::ng-deep .p-password input:focus {
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
 }
