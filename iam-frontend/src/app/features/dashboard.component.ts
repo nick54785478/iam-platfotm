@@ -1,18 +1,35 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../core/services/auth.service';
+import { UserProfileSidebarComponent } from './iam/components/user-profile-sidebar/user-profile-sidebar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, UserProfileSidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent {
   authService = inject(AuthService);
   private readonly router = inject(Router);
+
+  showProfileSidebar = signal(false);
+
+  get currentUserRepresentation() {
+    const username = this.authService.currentUser() || '';
+    return {
+      username,
+      email: '',
+      status: 'ACTIVE',
+      roles: []
+    };
+  }
+
+  openProfileSidebar() {
+    this.showProfileSidebar.set(true);
+  }
 
   userInitials(): string {
     const user = this.authService.currentUser();

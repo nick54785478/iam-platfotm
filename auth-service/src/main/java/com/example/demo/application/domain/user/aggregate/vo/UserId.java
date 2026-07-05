@@ -18,7 +18,7 @@ public record UserId(UUID value) {
 	}
 
 	/**
-	 * 🚀 業務工廠：生成一個全宇宙唯一的全新使用者物理主鍵
+	 * 業務工廠：生成一個全宇宙唯一的全新使用者物理主鍵
 	 */
 	public static UserId generate() {
 		return new UserId(UUID.randomUUID());

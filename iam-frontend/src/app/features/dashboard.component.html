@@ -39,7 +39,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="user-profile">
+      <div class="user-profile" (click)="openProfileSidebar()" style="cursor: pointer; transition: background 0.2s; border-radius: 8px; padding: 0.25rem;" title="View My Permissions" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
         <div class="avatar">{{ userInitials() }}</div>
         <div class="user-info">
           <div class="username">{{ authService.currentUser() }}</div>
@@ -70,4 +70,10 @@
       <router-outlet></router-outlet>
     </section>
   </main>
+
+  <app-user-profile-sidebar 
+    [visible]="showProfileSidebar()" 
+    (visibleChange)="showProfileSidebar.set($event)"
+    [user]="currentUserRepresentation">
+  </app-user-profile-sidebar>
 </div>

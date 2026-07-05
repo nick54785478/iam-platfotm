@@ -170,4 +170,33 @@ export class DeptService {
       headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator }
     });
   }
+
+  // --- API Resource Rules ---
+  createApiRule(tenantId: string, operator: string, payload: { httpMethod: string; pathPattern: string; requiredPermission: string; priority: number }): Observable<any> {
+    return this.http.post<any>(`${environment.apiEndpoint}/departments/api-rules`, payload, {
+      headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator }
+    });
+  }
+
+  updateApiRule(tenantId: string, operator: string, id: number, payload: { httpMethod: string; pathPattern: string; requiredPermission: string; priority: number }): Observable<any> {
+    return this.http.put<any>(`${environment.apiEndpoint}/departments/api-rules/${id}`, payload, {
+      headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator }
+    });
+  }
+
+  toggleApiRuleStatus(tenantId: string, operator: string, id: number, isActive: boolean): Observable<any> {
+    const params = new HttpParams().set('active', isActive.toString());
+    return this.http.patch<any>(`${environment.apiEndpoint}/departments/api-rules/${id}/status`, null, {
+      headers: { 'X-Tenant-Id': tenantId, 'X-User-Id': operator },
+      params
+    });
+  }
+
+  getPagedApiRules(page: number = 0, size: number = 20, tenantId?: string, httpMethod?: string, pathPattern?: string): Observable<any> {
+    let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    if (tenantId) params = params.set('tenantId', tenantId);
+    if (httpMethod) params = params.set('httpMethod', httpMethod);
+    if (pathPattern) params = params.set('pathPattern', pathPattern);
+    return this.http.get<any>(`${environment.apiEndpoint}/departments/api-rules`, { params });
+  }
 }

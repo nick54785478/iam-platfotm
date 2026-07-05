@@ -1,51 +1,121 @@
 <div class="list-section glass-panel animate-fade-in" style="margin: 1.5rem; padding: 1.5rem;">
-  <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <h3>Department Service Permissions</h3>
-      <p style="color: var(--text-secondary); margin-top: 0.25rem;">Manage the permission definitions for the Department module.</p>
+  
+  <!-- Custom Tab Switcher -->
+  <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+    <button pButton type="button" [text]="true" label="Department Permissions" icon="pi pi-lock" 
+      (click)="activeTab = 'permissions'" 
+      [ngStyle]="{'font-weight': activeTab === 'permissions' ? 'bold' : 'normal', 'border-bottom': activeTab === 'permissions' ? '2px solid var(--primary-color, #a855f7)' : 'none', 'border-radius': '0', 'color': activeTab === 'permissions' ? 'var(--primary-color, #a855f7)' : 'inherit'}"></button>
+    <button pButton type="button" [text]="true" label="API Resource Rules" icon="pi pi-server" 
+      (click)="activeTab = 'api-rules'" 
+      [ngStyle]="{'font-weight': activeTab === 'api-rules' ? 'bold' : 'normal', 'border-bottom': activeTab === 'api-rules' ? '2px solid var(--primary-color, #a855f7)' : 'none', 'border-radius': '0', 'color': activeTab === 'api-rules' ? 'var(--primary-color, #a855f7)' : 'inherit'}"></button>
+  </div>
+
+  <!-- Permissions View -->
+  <div *ngIf="activeTab === 'permissions'" class="animate-fade-in">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3>Department Service Permissions</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.25rem;">Manage the permission definitions for the Department module.</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <span class="p-input-icon-left">
+          <input pInputText type="text" placeholder="Search..." [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" />
+        </span>
+        <p-button label="Define Permission" icon="pi pi-plus" (click)="openCreateModal()" styleClass="glow-button"></p-button>
+      </div>
     </div>
-    <div style="display: flex; gap: 1rem; align-items: center;">
-      <span class="p-input-icon-left">
-        <input pInputText type="text" placeholder="Search..." [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" />
-      </span>
-      <p-button label="Define Permission" icon="pi pi-plus" (click)="openCreateModal()" styleClass="glow-button"></p-button>
+    
+    <div class="table-container mt-4">
+      <p-table [value]="permissions()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Module</th>
+            <th>Description</th>
+            <th style="width: 100px; text-align: center;">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-perm>
+          <tr>
+            <td><code>{{ perm.code }}</code></td>
+            <td>{{ perm.name }}</td>
+            <td><span class="mini-badge">{{ perm.module }}</span></td>
+            <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="perm.description || ''">
+              {{ perm.description }}
+            </td>
+            <td style="text-align: center;">
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="openEditModal(perm)" title="Edit"></p-button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem;">No permissions found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
   </div>
-  
-  <div class="table-container mt-4">
-    <p-table [value]="permissions()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Code</th>
-          <th>Name</th>
-          <th>Module</th>
-          <th>Description</th>
-          <th style="width: 100px; text-align: center;">Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-perm>
-        <tr>
-          <td><code>{{ perm.code }}</code></td>
-          <td>{{ perm.name }}</td>
-          <td><span class="mini-badge">{{ perm.module }}</span></td>
-          <td style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="perm.description || ''">
-            {{ perm.description }}
-          </td>
-          <td style="text-align: center;">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="openEditModal(perm)" title="Edit"></p-button>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="5" style="text-align: center; padding: 2rem;">No permissions found.</td>
-        </tr>
-      </ng-template>
-    </p-table>
+
+  <!-- API Rules View -->
+  <div *ngIf="activeTab === 'api-rules'" class="animate-fade-in">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3>API Resource Rules</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.25rem;">Dynamically manage access rules for backend API routes.</p>
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <select class="form-input" [(ngModel)]="ruleSearchMethod" (change)="onRuleSearch()" style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 6px; width: auto; outline: none;">
+          <option value="">Any Method</option>
+          <option *ngFor="let m of httpMethodOptions" [value]="m">{{ m }}</option>
+        </select>
+        <span class="p-input-icon-left">
+          <input pInputText type="text" placeholder="Search Path..." [(ngModel)]="ruleSearchPath" (ngModelChange)="onRuleSearch()" />
+        </span>
+        <p-button label="Add Rule" icon="pi pi-plus" (click)="openCreateRuleModal()" styleClass="glow-button"></p-button>
+      </div>
+    </div>
+    
+    <div class="table-container mt-4">
+      <p-table [value]="apiRules()" [paginator]="true" [rows]="10" styleClass="p-datatable-sm p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 100px;">Method</th>
+            <th>Path Pattern</th>
+            <th>Required Permission</th>
+            <th style="width: 100px; text-align: center;">Priority</th>
+            <th style="width: 120px; text-align: center;">Status</th>
+            <th style="width: 100px; text-align: center;">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rule>
+          <tr>
+            <td>
+              <p-tag [value]="rule.httpMethod" [severity]="rule.httpMethod === 'GET' ? 'info' : (rule.httpMethod === 'POST' ? 'success' : (rule.httpMethod === 'DELETE' ? 'danger' : 'warning'))"></p-tag>
+            </td>
+            <td><code>{{ rule.pathPattern }}</code></td>
+            <td><span class="mini-badge">{{ rule.requiredPermission }}</span></td>
+            <td style="text-align: center;">{{ rule.priority }}</td>
+            <td style="text-align: center;">
+              <p-inputSwitch [(ngModel)]="rule.isActive" (onChange)="toggleRuleStatus(rule, $event)"></p-inputSwitch>
+            </td>
+            <td style="text-align: center;">
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" (click)="openEditRuleModal(rule)" title="Edit"></p-button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2rem;">No API rules found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal for Department Permission -->
 <p-dialog [header]="isEditMode() ? 'Edit Permission' : 'Define New Permission'" [visible]="showModal()"
   (visibleChange)="!$event && closeModal()" [modal]="true" [style]="{width: '450px'}" styleClass="glass-dialog"
   appendTo="body">
@@ -73,6 +143,40 @@
     <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
       <p-button label="Cancel" severity="secondary" (click)="closeModal()"></p-button>
       <p-button label="Save" type="submit" [disabled]="permForm.invalid" styleClass="glow-button"></p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Modal for API Resource Rule -->
+<p-dialog [header]="isRuleEditMode() ? 'Edit API Rule' : 'Add API Rule'" [visible]="showRuleModal()"
+  (visibleChange)="!$event && closeRuleModal()" [modal]="true" [style]="{width: '500px'}" styleClass="glass-dialog"
+  appendTo="body">
+  <form (ngSubmit)="onRuleSubmit()" #ruleForm="ngForm">
+    <div class="form-group p-fluid">
+      <label class="form-label">HTTP Method</label>
+      <select class="form-input" [(ngModel)]="ruleMethod" name="ruleMethod" required style="background: rgba(15, 23, 42, 0.5); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 6px; width: 100%;">
+        <option *ngFor="let m of httpMethodOptions" [value]="m">{{ m }}</option>
+      </select>
+    </div>
+    
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Path Pattern</label>
+      <input pInputText [(ngModel)]="rulePathPattern" name="rulePathPattern" required placeholder="e.g. /api/departments/**" />
+    </div>
+
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Required Permission</label>
+      <input pInputText [(ngModel)]="rulePermission" name="rulePermission" required placeholder="e.g. platform:RULE_MANAGE" />
+    </div>
+    
+    <div class="form-group p-fluid mt-3">
+      <label class="form-label">Priority (Higher matches first)</label>
+      <input pInputText type="number" [(ngModel)]="rulePriority" name="rulePriority" required />
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4" style="display:flex; justify-content: flex-end; gap: 8px;">
+      <p-button label="Cancel" severity="secondary" (click)="closeRuleModal()"></p-button>
+      <p-button label="Save" type="submit" [disabled]="ruleForm.invalid" styleClass="glow-button"></p-button>
     </div>
   </form>
 </p-dialog>
