@@ -59,6 +59,24 @@ public class GatewayFallbackController {
                 ));
     }
 
+    /**
+     * 認證中心癱瘓時的降級防線。
+     * <p>
+     * <b>【防禦重點】</b>：<br>
+     * 認證中心處於死機狀態時，拒絕全新鑑權。此處不需要返還任何 data 數據體，
+     * 透過 {@code .fail()} 產出的 JSON 將會自動剔除 data 欄位，保持回應的俐落性。
+     * </p>
+     */
+    @RequestMapping("/kyc")
+    public ResponseEntity<GatewayResponse<Void>> kycFallback() {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(GatewayResponse.fail(
+                        "IAM-503-AUTH-DOWN",
+                        "認證授權中心正處於極高負載或維護中，暫時拒絕全新鑑權。"
+                ));
+    }
+
     @GetMapping("/tenant")
     public ResponseEntity<GatewayResponse<Void>> tenantFallback() {
        return ResponseEntity

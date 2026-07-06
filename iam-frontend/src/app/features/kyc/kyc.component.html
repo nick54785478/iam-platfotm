@@ -1,0 +1,125 @@
+<div class="kyc-wrapper">
+  <div class="container">
+    <div class="header">
+      <h1>KYC 實名認證</h1>
+      <p>為保障您的帳戶安全，請填寫真實、準確的個人身分與居住資訊。</p>
+    </div>
+
+    <div class="auth-simulator">
+      <label for="mockUserId">模擬登入 User ID :</label>
+      <input type="text" id="mockUserId" [(ngModel)]="mockUserId" placeholder="輸入 User ID (X-User-Id)" [ngModelOptions]="{standalone: true}">
+      <button type="button" class="btn-submit small-btn" (click)="loadData()" [disabled]="isLoading">
+        {{ isLoading ? '載入中...' : '載入已存資料' }}
+      </button>
+    </div>
+
+    <form [formGroup]="kycForm" (ngSubmit)="onSubmit()">
+      <!-- 基本個人資訊 -->
+      <div class="section-title">基本個人資訊 (Personal Information)</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>名字 (First Name)</label>
+          <input type="text" formControlName="firstName" placeholder="如: 小明 (Xiaoming)"
+                 [class.invalid]="kycForm.get('firstName')?.invalid && kycForm.get('firstName')?.touched">
+        </div>
+        <div class="form-group">
+          <label>姓氏 (Last Name)</label>
+          <input type="text" formControlName="lastName" placeholder="如: 王 (Wang)"
+                 [class.invalid]="kycForm.get('lastName')?.invalid && kycForm.get('lastName')?.touched">
+        </div>
+        <div class="form-group">
+          <label>出生日期 (Date of Birth)</label>
+          <input type="date" formControlName="dateOfBirth"
+                 [class.invalid]="kycForm.get('dateOfBirth')?.invalid && kycForm.get('dateOfBirth')?.touched">
+        </div>
+        <div class="form-group">
+          <label>國籍 (Nationality)</label>
+          <select formControlName="countryCode"
+                  [class.invalid]="kycForm.get('countryCode')?.invalid && kycForm.get('countryCode')?.touched">
+            <option value="" disabled>請選擇國籍</option>
+            <option value="TW">台灣 (Taiwan)</option>
+            <option value="US">美國 (United States)</option>
+            <option value="JP">日本 (Japan)</option>
+            <option value="GB">英國 (United Kingdom)</option>
+            <option value="OTHER">其他 (Other)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 身分證明文件 -->
+      <div class="section-title">身分證明文件 (Identity Document)</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>文件類型 (Document Type)</label>
+          <select formControlName="documentType"
+                  [class.invalid]="kycForm.get('documentType')?.invalid && kycForm.get('documentType')?.touched">
+            <option value="" disabled>請選擇文件類型</option>
+            <option value="NATIONAL_ID_CARD">身分證 (National ID)</option>
+            <option value="PASSPORT">護照 (Passport)</option>
+            <option value="DRIVERS_LICENSE">駕照 (Driver's License)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>證件號碼 (ID Number)</label>
+          <input type="text" formControlName="idNumber" placeholder="請輸入證件上的號碼"
+                 [class.invalid]="kycForm.get('idNumber')?.invalid && kycForm.get('idNumber')?.touched">
+        </div>
+      </div>
+
+      <!-- 居住地址 -->
+      <div class="section-title">居住地址 (Residential Address)</div>
+      
+      <div class="form-grid" *ngIf="isSubmitted">
+        <div class="form-group full-width">
+          <label>完整地址 (Full Address)</label>
+          <input type="text" [value]="fullAddressDisplay" disabled>
+        </div>
+      </div>
+
+      <div class="form-grid" *ngIf="!isSubmitted">
+        <div class="form-group">
+          <label>國家/地區 (Country)</label>
+          <select formControlName="addrCountry"
+                  [class.invalid]="kycForm.get('addrCountry')?.invalid && kycForm.get('addrCountry')?.touched">
+            <option value="" disabled>請選擇國家</option>
+            <option value="TW">台灣 (Taiwan)</option>
+            <option value="US">美國 (United States)</option>
+            <option value="JP">日本 (Japan)</option>
+            <option value="OTHER">其他 (Other)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>縣市 (City)</label>
+          <input type="text" formControlName="addrCity" placeholder="如: 台北市 (Taipei City)"
+                 [class.invalid]="kycForm.get('addrCity')?.invalid && kycForm.get('addrCity')?.touched">
+        </div>
+        <div class="form-group">
+          <label>鄉鎮市區 (District/Town)</label>
+          <input type="text" formControlName="addrState" placeholder="如: 南港區 (Nangang Dist.)"
+                 [class.invalid]="kycForm.get('addrState')?.invalid && kycForm.get('addrState')?.touched">
+        </div>
+        <div class="form-group">
+          <label>郵遞區號 (Postal Code)</label>
+          <input type="text" formControlName="addrPostalCode" placeholder="如: 110"
+                 [class.invalid]="kycForm.get('addrPostalCode')?.invalid && kycForm.get('addrPostalCode')?.touched">
+        </div>
+        <div class="form-group full-width">
+          <label>詳細地址 (Detailed Address)</label>
+          <input type="text" formControlName="addrDetail" placeholder="街道名稱、巷弄、門牌、樓層"
+                 [class.invalid]="kycForm.get('addrDetail')?.invalid && kycForm.get('addrDetail')?.touched">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading || isSubmitted">
+        <span class="loading-spinner" *ngIf="isLoading"></span>
+        <span>
+          {{ isLoading ? '處理中...' : (isSubmitted ? (kycStatus === 'PENDING_REVIEW' ? '審核中' : (kycStatus === 'APPROVED' ? '已核准' : '無法提交')) : '提交審核') }}
+        </span>
+      </button>
+      
+      <div class="status-message" *ngIf="statusMessage" [ngClass]="'status-' + statusType">
+        {{ statusMessage }}
+      </div>
+    </form>
+  </div>
+</div>

@@ -58,6 +58,13 @@ public class GatewayRoutesConfiguration {
                         .before(uri("http://localhost:8081"))
                         .build())
 
+                .and(route("kyc-service-route")
+                        .route(path("/api/kyc/**"), http())
+                        .filter(rateLimitFactory.ipRateLimiter("kyc-api", 10, 10))
+                        .filter(circuitBreaker("kycCircuitBreaker", URI.create("forward:/fallback/kyc")))
+                        .before(uri("http://localhost:8083"))
+                        .build())
+
                 .and(route("tenant-service-route")
                         .route(path("/api/v1/platform/tenants")
                                 .or(path("/api/v1/platform/tenants/**"))
