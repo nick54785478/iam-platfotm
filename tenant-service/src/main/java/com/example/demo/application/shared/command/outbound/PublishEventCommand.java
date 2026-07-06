@@ -13,7 +13,6 @@ import lombok.Builder;
  * @param routingKey 路由鍵/訊息鍵 (Message Key)，用於確保同一聚合根的事件循序寫入同一個 Partition
  * @param eventJson  已序列化為 JSON 格式的事件 Payload
  */
-@Builder
 public record PublishEventCommand(
         String topic,
         String routingKey,

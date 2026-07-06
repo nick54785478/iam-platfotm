@@ -79,11 +79,8 @@ public class OutboxScheduler {
                 String targetTopic = resolveTopic(event.getAggregateType());
 
                 // 3. 規格對齊：將物理儲存實體封裝為不可變的領域發布指令 (PublishEventCommand)
-                PublishEventCommand command = PublishEventCommand.builder()
-                        .topic(targetTopic)
-                        .routingKey(event.getId().toString()) // 拿宇宙唯一事件碼充當 Message Key 確保分區順序
-                        .eventJson(event.getPayload())
-                        .build();
+                PublishEventCommand command =
+                        new PublishEventCommand(targetTopic, event.getId().toString(), event.getPayload());
 
                 // 4. 透過解耦的 Port 發動非同步傳輸，底層由 Kafka 適配器接管 ACK 回執
                 messagePublisher.send(command);
