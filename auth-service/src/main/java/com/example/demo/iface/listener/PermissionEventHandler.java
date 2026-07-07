@@ -59,14 +59,15 @@ public class PermissionEventHandler {
             String description = payload.path("description").asText();
             String module = payload.path("module").asText();
 
-            long eventVersion = payload.path("version").asLong(0L); // 🚀 萃取版本號
+            System.out.println("name:"+name);
+            long eventVersion = payload.path("version").asLong(0L); // 萃取版本號
 
             log.info("[CQRS-Projection] 準備執行充血模型投影變更 - Code: {}, EventVersion: {}", code, eventVersion);
 
             jpaRepo.findByTenantIdAndCode(tenantId, code)
                     .ifPresentOrElse(
                             existing -> {
-                                // 🟢 實體內部自行判斷版本，若回傳 false 代表這是舊事件，直接吃掉不存 DB
+                                // 實體內部自行判斷版本，若回傳 false 代表這是舊事件，直接吃掉不存 DB
                                 boolean isUpdated = existing.syncDetails(name, description, module, eventVersion);
                                 if (isUpdated) {
                                     jpaRepo.save(existing);
@@ -76,7 +77,7 @@ public class PermissionEventHandler {
                                 }
                             },
                             () -> {
-                                // 🟢 新增時，一併把初始版本號塞進去
+                                // 新增時，一併把初始版本號塞進去
                                 PermissionDictView newPo = PermissionDictView.createNew(
                                         permId, tenantId, code, name, description, module, eventVersion
                                 );

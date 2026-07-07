@@ -90,18 +90,26 @@ public class DeptPermissionHeaderFilter implements Filter {
 		}
 
 		/**
-		 * 3. 領域授權校驗 (Domain Authorization & RBAC)
-		 * 
+		 * 3. 領域授權校驗 (Domain Authorization - Service Level)
+		 *
 		 * <pre>
-		 * 將扁平化的權限字串還原為陣列，並檢查是否具備操作「部門領域聚合根」的合法權限。 
-		 * 允許放行的條件：擁有超級管理員權限 (auth-service:ADMIN_ALL) 或 專屬的部門寫入權限 (dept-service:WRITE)。
+		 * 這裡只做「粗粒度 (Coarse-grained)」的服務級別檢核。
+		 * 只要使用者擁有超級管理員 (*:ADMIN_ALL) 或「任何」開頭為 dept-service: 的權限，
+		 * 就代表他是本服務的合法使用者，允許放行進入 Controller。
+		 * (細粒度的 READ_ALL, DEPT_CREATE 等校驗，由後續的 Interceptor 或 @PreAuthorize 處理)
 		 * </pre>
 		 */
 		List<String> authorities = Arrays.asList(permissionsHeader.split(","));
+		System.out.println("authorities:"+authorities);
 
-		if (!authorities.contains("auth-service:ADMIN_ALL") && !authorities.contains("dept-service:WRITE")) {
+		// 核心修復：檢查是否具備全局超管，或「任何」屬於本微服務的權限
+		boolean hasServiceAccess = authorities.contains("*:ADMIN_ALL") ||
+				authorities.contains("auth-service:ADMIN_ALL") ||
+				authorities.stream().anyMatch(auth -> auth.startsWith("dept-service:"));
+
+		if (!hasServiceAccess) {
 			respondWithJson(httpResponse, HttpServletResponse.SC_FORBIDDEN,
-					"Access Denied: Insufficient permissions for Department Service operations.");
+					"Access Denied: You do not have any permissions for the Department Service.");
 			return;
 		}
 

@@ -46,7 +46,7 @@ public class PermissionGuardInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // 🚀 埋入微服務進站時的 Log
+        // 埋入微服務進站時的 Log
         String incTenant = request.getHeader("X-Tenant-Id");
         String incPerms = request.getHeader("X-User-Permissions");
 

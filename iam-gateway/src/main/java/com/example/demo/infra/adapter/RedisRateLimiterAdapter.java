@@ -26,7 +26,7 @@ public class RedisRateLimiterAdapter implements GatewayRateLimiterPort {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    // 🚀 核心原子防線：宣告並載入 Lua 腳本
+    // 核心原子防線：宣告並載入 Lua 腳本
     private static final RedisScript<List> RATE_LIMIT_LUA_SCRIPT = new DefaultRedisScript<>(
             """
             local key = KEYS[1]

@@ -36,7 +36,7 @@ public class Group {
 
 	private final GroupId id;
 	private String groupName;
-	private final String groupCode; // 🚀 規格對齊：作為與前端、子系統對接的主角業務鍵，一經建立便不可變
+	private final String groupCode; // 規格對齊：作為與前端、子系統對接的主角業務鍵，一經建立便不可變
 
 	/** 該群組內包含的使用者物理 ID 弱引用集合 (Set 天然去重) */
 	private final Set<UserId> memberUserIds;

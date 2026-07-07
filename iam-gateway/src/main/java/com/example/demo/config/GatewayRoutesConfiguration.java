@@ -86,7 +86,7 @@ public class GatewayRoutesConfiguration {
                     String userId = (String) servletRequest.getAttribute("X-User-Id");
                     String permissions = (String) servletRequest.getAttribute("X-User-Permissions");
 
-                    // 🚀 埋入網關出站前的 Log (建議在正式上線 Production 時可以調成 log.debug 甚至關閉)
+                    // 埋入網關出站前的 Log (建議在正式上線 Production 時可以調成 log.debug 甚至關閉)
                     System.out.println("=================================================");
                     System.out.println("[SCG 網關準備轉發] 目標路徑: " + request.uri());
                     System.out.println("  -> 注入 Header [X-Tenant-Id]: " + tenantId);

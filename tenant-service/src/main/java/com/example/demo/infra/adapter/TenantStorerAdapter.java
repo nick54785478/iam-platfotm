@@ -48,7 +48,7 @@ public class TenantStorerAdapter implements TenantStorerPort {
             jpaRepository.save(newEntity);
         }
 
-        // 2. 🛡️ 提取純潔的、沒有技術污染的內部領域事件
+        // 2. 提取純潔的、沒有技術污染的內部領域事件
         List<DomainEvent> domainEvents = tenant.pullDomainEvents();
 
         // 3. 核心共舞：將領域事件裝入「租戶信封」並發射

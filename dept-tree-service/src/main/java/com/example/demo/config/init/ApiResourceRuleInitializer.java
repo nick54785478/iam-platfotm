@@ -64,7 +64,9 @@ public class ApiResourceRuleInitializer implements ApplicationRunner {
                 new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/*/search", "dept-service:READ_ALL", 100),
                 new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/*/hierarchy", "dept-service:READ_ALL", 100),
                 new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/**/tree", "dept-service:READ_ALL", 100),
-                new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/**/breadcrumbs", "dept-service:READ_ALL", 100)
+                new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/**/breadcrumbs", "dept-service:READ_ALL", 100),
+                new CreateApiRuleCommand(SYSTEM_TENANT, "GET", "/api/departments/roots/*", "dept-service:READ_ALL", 100)
+
         );
 
         for (CreateApiRuleCommand cmd : seedRules) {
