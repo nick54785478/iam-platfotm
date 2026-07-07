@@ -166,7 +166,23 @@
 
     <div class="form-group p-fluid mt-3">
       <label class="form-label">Required Permission</label>
-      <input pInputText [(ngModel)]="rulePermission" name="rulePermission" required placeholder="e.g. platform:RULE_MANAGE" />
+      <p-dropdown [options]="permissions()" [(ngModel)]="rulePermission" name="rulePermission" 
+                  optionLabel="name" optionValue="code" placeholder="Select a Permission" 
+                  [filter]="true" filterBy="name,code" [showClear]="true" required
+                  appendTo="body" styleClass="custom-dropdown w-full">
+        <ng-template let-perm pTemplate="selectedItem">
+          <div *ngIf="perm" class="dropdown-selected-item">
+            <span class="dropdown-item-name">{{ perm.name }}</span>
+            <small class="dropdown-item-code">({{ perm.code }})</small>
+          </div>
+        </ng-template>
+        <ng-template let-perm pTemplate="item">
+          <div class="dropdown-list-item">
+            <span class="dropdown-item-name">{{ perm.name }}</span>
+            <small class="dropdown-item-code">{{ perm.code }}</small>
+          </div>
+        </ng-template>
+      </p-dropdown>
     </div>
     
     <div class="form-group p-fluid mt-3">

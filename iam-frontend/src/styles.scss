@@ -357,3 +357,68 @@ a:not(.p-button).glow-button {
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
 }
+
+/* Custom Dropdown Styling */
+.custom-dropdown {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: var(--radius-md) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.custom-dropdown:not(.p-disabled):hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.custom-dropdown.p-focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+.custom-dropdown .p-dropdown-label {
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem !important; /* Leave space for clear icon and trigger */
+  color: #fff !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-dropdown .p-dropdown-trigger {
+  width: 2.5rem !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+.custom-dropdown .p-dropdown-clear-icon {
+  right: 2.5rem !important; /* Move clear icon away from the dropdown arrow */
+  color: var(--text-secondary) !important;
+}
+
+/* Dropdown list items styling */
+.dropdown-selected-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.dropdown-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+}
+
+.dropdown-item-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.dropdown-item-code {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-family: monospace;
+}

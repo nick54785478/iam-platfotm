@@ -7,6 +7,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-iam-roles',
@@ -17,7 +18,8 @@ import { InputTextModule } from 'primeng/inputtext';
     TableModule,
     ButtonModule,
     DialogModule,
-    InputTextModule
+    InputTextModule,
+    DropdownModule
   ],
   templateUrl: './iam-roles.component.html',
   styleUrl: './iam-roles.component.scss'
@@ -26,6 +28,7 @@ export class IamRolesComponent implements OnInit {
   private readonly authService = inject(AuthService);
 
   roles = signal<RoleRepresentation[]>([]);
+  availablePermissions = signal<any[]>([]);
 
   // Role form
   showAddRoleModal = signal(false);
@@ -44,6 +47,16 @@ export class IamRolesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadRoles();
+    this.loadPermissions();
+  }
+
+  loadPermissions(): void {
+    const tenantId = this.authService.currentTenant();
+    if (!tenantId) return;
+    this.authService.getPermissionsDict(tenantId).subscribe({
+      next: (res) => this.availablePermissions.set(res.data || []),
+      error: () => console.error('Failed to load permissions dictionary')
+    });
   }
 
   loadRoles(): void {
@@ -82,6 +95,17 @@ export class IamRolesComponent implements OnInit {
     this.newPermSys = 'auth-service';
     this.newPermCode = '';
     this.newPermName = '';
+  }
+
+  onPermissionChange(code: string): void {
+    const perm = this.availablePermissions().find(p => p.code === code);
+    if (perm) {
+      this.newPermName = perm.name;
+      if (perm.module) {
+        // Also auto-fill system code if the permission provides a module
+        this.newPermSys = perm.module;
+      }
+    }
   }
 
   onAssignPermissionSubmit(): void {
