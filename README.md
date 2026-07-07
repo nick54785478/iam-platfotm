@@ -26,15 +26,15 @@
 
 ### 簡易系統全局架構 (ASCII 示意圖)
 ```text
-                          [ Client Requests ]
-                                   │
-                                   ▼
-                     ┌───────────────────────────┐
-                     │   Spring Cloud Gateway    │ (WebFlux / Redis 限流)
-                     └─────────────┬─────────────┘
-                                   │
-           ┌───────────────────────┬───────┴───────┬───────────────────────┐
-           ▼                       ▼               ▼                       ▼
+                                  [ Client Requests ]
+                                           │
+                                           ▼
+                             ┌───────────────────────────┐
+                             │   Spring Cloud Gateway    │ (WebFlux / Redis 限流)
+                             └─────────────┬─────────────┘
+                                           │
+           ┌───────────────────────┬───────┴───────┬──────────────────────────────┐
+           ▼                       ▼               ▼                              ▼
  ┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐   ┌───────────────────┐
  │   TenantService   │   │  DeptTreeService  │   │    AuthService    │   │    KycService     │
  │   (SaaS 租戶)     │   │  (Command Side)   │   │  (Command/Query)  │   │   (實名合規)      │
@@ -166,6 +166,9 @@ flowchart TB
 * **嚴格依賴反轉 (DIP)**：內部絕不包含任何 JPA Entity 或具體 Schema，僅定義抽象輸出埠。
 * **雙軌聯防動態權限 (Dual-Track Authz)**：內建 `PermissionGuardInterceptor`，第一軌支援 `@RequiresPermission` 硬編碼中斷；第二軌透過 Redis Cache-Aside 引擎進行 $O(1)$ 複雜 AntPath 路徑與租戶客製化規則的動態降維比對。
 
+註. 
+引入此 Shared Kernel 需實作 RuleCacheManagerAdapter 
+WebMvcConfiguration 需註冊相關攔截器 PermissionGuardInterceptor
 ---
 
 ## 系統目錄結構 (Hexagonal Architecture View)
