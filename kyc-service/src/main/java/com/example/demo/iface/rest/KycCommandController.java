@@ -1,6 +1,6 @@
 package com.example.demo.iface.rest;
 
-import com.example.demo.application.service.UserIdentityCommandService;
+import com.example.demo.application.service.KycCommandService;
 import com.example.demo.application.shared.command.inbound.ApproveKycCommand;
 import com.example.demo.application.shared.command.inbound.RejectKycCommand;
 import com.example.demo.application.shared.command.inbound.SubmitKycCommand;
@@ -27,7 +27,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class KycCommandController {
 
-    private final UserIdentityCommandService kycCommandService;
+    private final KycCommandService kycCommandService;
 
     /**
      * 提交個人資訊
@@ -81,9 +81,7 @@ public class KycCommandController {
                                                          @RequestHeader("X-User-Id") String reviewerId, @RequestBody RejectKycResource resource) {
 
         String currentTenantId = TenantContext.getCurrentTenantId();
-
         RejectKycCommand command = new RejectKycCommand(currentTenantId, targetUserId, reviewerId, resource.reason());
-
         kycCommandService.rejectKyc(command);
         return ResponseEntity.ok(new KycRejectedResource("200", "駁回，請修正"));
     }
