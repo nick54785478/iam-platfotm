@@ -167,8 +167,9 @@ flowchart TB
 * **雙軌聯防動態權限 (Dual-Track Authz)**：內建 `PermissionGuardInterceptor`，第一軌支援 `@RequiresPermission` 硬編碼中斷；第二軌透過 Redis Cache-Aside 引擎進行 $O(1)$ 複雜 AntPath 路徑與租戶客製化規則的動態降維比對。
 
 註. 
-引入此 Shared Kernel 需實作 RuleCacheManagerAdapter 
-WebMvcConfiguration 需註冊相關攔截器 PermissionGuardInterceptor
+>* 引入此 Shared Kernel 需實作 RuleCacheManagerAdapter 
+>* WebMvcConfiguration 需註冊相關攔截器 PermissionGuardInterceptor
+
 ---
 
 ## 系統目錄結構 (Hexagonal Architecture View)
