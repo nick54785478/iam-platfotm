@@ -10,7 +10,7 @@
 ## 核心技術生態 (Tech Stack)
 
 ### 後端 (Backend)
-* **語言與框架**：Java 21, Spring Boot 3.2.5
+* **語言與框架**：Java 21, Spring Boot 4.0.6 ~ 4.0.7
 * **微服務與網關**：Spring Cloud 2023.0.1 (Spring Cloud Gateway)
 * **資料庫與快取**：PostgreSQL 15, Redis 7.0 + Redisson 3.27.2
 * **消息總線**：Kafka 3.6 (KRaft 模式，無 Zookeeper)
