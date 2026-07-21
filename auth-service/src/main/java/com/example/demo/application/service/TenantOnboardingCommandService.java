@@ -50,7 +50,7 @@ public class TenantOnboardingCommandService {
             // 這會在地端資料庫產生一筆 role_permission 紀錄，並在 JWT 裡化作 "*:ADMIN_ALL"
             Permission superAdminPermission = new Permission(
                     "*",                  // 萬用系統代碼
-                    "ADMIN_ALL",          // 萬用權限代碼
+                    "*:ADMIN_ALL",        // 萬用權限代碼
                     "系統最高萬用權限"      // 權限描述名稱 (滿足 Record 的非空防呆)
             );
 

@@ -1,7 +1,7 @@
 package com.example.demo.infra.projection;
 
-import com.example.demo.iface.event.DepartmentRollUpProjectionHandler;
-import com.example.demo.iface.event.DepartmentViewProjectionHandler;
+import com.example.demo.application.event.DepartmentRollUpProjectionHandler;
+import com.example.demo.application.event.DepartmentViewProjectionHandler;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

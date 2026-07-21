@@ -113,7 +113,7 @@ export class IamRolesComponent implements OnInit {
     if (target) {
       const permObj = {
         systemCode: this.newPermSys,
-        permissionCode: this.newPermCode.toUpperCase(),
+        permissionCode: this.newPermCode,
         permissionName: this.newPermName
       };
       this.authService.reportPermission(target.roleCode, permObj).subscribe({

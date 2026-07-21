@@ -87,7 +87,7 @@ public class RoleCommandRepositoryAdapter implements RoleCommandRepositoryPort {
 		// 批次拉出這群角色實體，並在記憶體內拼裝出 "system_code:permission_code" 的標準鑑權契約字串
 		return jpaRepository.findByTenantIdAndRoleCodeIn(currentTenantId, roleCodes).stream()
 				.flatMap(roleEntity -> roleEntity.getPermissions().stream()) // 展開一對多權限集合
-				.map(p -> p.getSystemCode() + ":" + p.getPermissionCode()) // 格式化
+				.map(p -> p.getPermissionCode()) // 格式化
 				.collect(Collectors.toSet()); // 自動去重 (Union)
 	}
 

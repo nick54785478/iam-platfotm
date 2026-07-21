@@ -76,7 +76,7 @@ public class LocalDataInitializer implements ApplicationRunner {
 			roleCommandService.createRole("管理員", "ADMIN");
 
 			// 指派具體的系統操作權限點 (權限字串將成為 JWT 內 authorities 的一部分)
-			roleCommandService.reportPermission("ADMIN", "*", "ADMIN_ALL", "Admin 登入");
+			roleCommandService.reportPermission("ADMIN", "*", "*:ADMIN_ALL", "Admin 登入");
 
 			/*
 			 * ========================================== 🔗 步驟 C：完成關聯綁定
