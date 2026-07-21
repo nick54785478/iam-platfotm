@@ -1,4 +1,4 @@
-package com.example.demo.iface.listener;
+package com.example.demo.iface.event;
 
 import com.example.demo.infra.persistence.repository.PermissionDictRepository;
 import com.example.demo.infra.projection.view.PermissionDictView;

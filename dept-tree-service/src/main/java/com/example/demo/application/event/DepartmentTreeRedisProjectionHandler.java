@@ -1,4 +1,4 @@
-package com.example.demo.iface.event;
+package com.example.demo.application.event;
 
 import com.example.demo.application.domain.dept.event.DepartmentCreatedEvent;
 import com.example.demo.application.domain.dept.event.DepartmentDeletedEvent;

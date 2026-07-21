@@ -1,4 +1,4 @@
-package com.example.demo.iface.event;
+package com.example.demo.application.event;
 
 
 import com.example.demo.application.domain.shared.event.DomainEvent;

@@ -1,4 +1,4 @@
-package com.example.demo.iface.listener;
+package com.example.demo.iface.event;
 
 import com.example.demo.application.port.IdempotencyHandlerPort;
 import com.example.demo.application.service.TenantOnboardingCommandService;

@@ -1,4 +1,4 @@
-package com.example.demo.iface.event;
+package com.example.demo.application.event;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
